@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
+
 import java.util.UUID;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,7 +28,7 @@ public interface StockApiDocs {
             description = "재고 등록 성공",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = profect.group1.goormdotcom.apiPayload.ApiResponse.class),
+                schema = @Schema(implementation = profect.group1.goormdotcom.common.apiPayload.ApiResponse.class),
                 examples = @ExampleObject(
                     name = "성공 예시",
                     value = """
@@ -62,7 +62,7 @@ public interface StockApiDocs {
             )
         )
     })
-    profect.group1.goormdotcom.apiPayload.ApiResponse<StockResponseDto> registerStock(
+    profect.group1.goormdotcom.common.apiPayload.ApiResponse<StockResponseDto> registerStock(
         @RequestBody StockRequestDto stockRequestDto
     );
 
@@ -76,7 +76,7 @@ public interface StockApiDocs {
             description = "재고 수정 성공",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = profect.group1.goormdotcom.apiPayload.ApiResponse.class),
+                schema = @Schema(implementation = profect.group1.goormdotcom.common.apiPayload.ApiResponse.class),
                 examples = @ExampleObject(
                     name = "성공 예시",
                     value = """
@@ -99,7 +99,7 @@ public interface StockApiDocs {
             content = @Content(mediaType = "application/json")
         )
     })
-    profect.group1.goormdotcom.apiPayload.ApiResponse<StockResponseDto> updateStock(
+    profect.group1.goormdotcom.common.apiPayload.ApiResponse<StockResponseDto> updateStock(
         @Parameter(description = "상품 ID", required = true)
         @PathVariable(value = "productId") UUID productId,
         @Parameter(description = "새 재고 수량 (정수)")
@@ -116,7 +116,7 @@ public interface StockApiDocs {
             description = "재고 조회 성공",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = profect.group1.goormdotcom.apiPayload.ApiResponse.class),
+                schema = @Schema(implementation = profect.group1.goormdotcom.common.apiPayload.ApiResponse.class),
                 examples = @ExampleObject(
                     name = "성공 예시",
                     value = """
@@ -139,7 +139,7 @@ public interface StockApiDocs {
             content = @Content(mediaType = "application/json")
         )
     })
-    profect.group1.goormdotcom.apiPayload.ApiResponse<StockResponseDto> getStock(
+    profect.group1.goormdotcom.common.apiPayload.ApiResponse<StockResponseDto> getStock(
         @Parameter(description = "상품 ID", required = true)
         @PathVariable(value = "productId") UUID productId
     );
@@ -154,7 +154,7 @@ public interface StockApiDocs {
             description = "재고 삭제 성공",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = profect.group1.goormdotcom.apiPayload.ApiResponse.class),
+                schema = @Schema(implementation = profect.group1.goormdotcom.common.apiPayload.ApiResponse.class),
                 examples = @ExampleObject(
                     name = "성공 예시",
                     value = """
@@ -168,7 +168,7 @@ public interface StockApiDocs {
             )
         )
     })
-    profect.group1.goormdotcom.apiPayload.ApiResponse<UUID> deleteStock(
+    profect.group1.goormdotcom.common.apiPayload.ApiResponse<UUID> deleteStock(
         @Parameter(description = "상품 ID", required = true)
         @PathVariable(value = "productId") UUID productId
     );

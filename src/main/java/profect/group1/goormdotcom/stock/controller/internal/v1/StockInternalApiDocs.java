@@ -1,7 +1,6 @@
 package profect.group1.goormdotcom.stock.controller.internal.v1;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,7 +8,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import org.springframework.web.bind.annotation.RequestBody;
 import profect.group1.goormdotcom.stock.controller.internal.v1.dto.StockAdjustmentRequestDto;
 import profect.group1.goormdotcom.stock.controller.internal.v1.dto.StockAdjustmentResponseDto;
@@ -29,7 +27,7 @@ public interface StockInternalApiDocs {
             description = "재고 차감 처리 결과",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = profect.group1.goormdotcom.apiPayload.ApiResponse.class),
+                schema = @Schema(implementation = profect.group1.goormdotcom.common.apiPayload.ApiResponse.class),
                 examples = @ExampleObject(
                     name = "성공 예시",
                     value = """
@@ -54,7 +52,7 @@ public interface StockInternalApiDocs {
             content = @Content(mediaType = "application/json")
         )
     })
-    profect.group1.goormdotcom.apiPayload.ApiResponse<StockAdjustmentResponseDto> decreaseStocks(
+    profect.group1.goormdotcom.common.apiPayload.ApiResponse<StockAdjustmentResponseDto> decreaseStocks(
         @RequestBody @Valid StockAdjustmentRequestDto stockAdjustmentRequestDto
     );
 
@@ -68,7 +66,7 @@ public interface StockInternalApiDocs {
             description = "재고 증가 처리 결과",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = profect.group1.goormdotcom.apiPayload.ApiResponse.class),
+                schema = @Schema(implementation = profect.group1.goormdotcom.common.apiPayload.ApiResponse.class),
                 examples = @ExampleObject(
                     name = "성공 예시",
                     value = """
@@ -88,7 +86,7 @@ public interface StockInternalApiDocs {
             )
         )
     })
-    profect.group1.goormdotcom.apiPayload.ApiResponse<StockAdjustmentResponseDto> increaseStocks(
+    profect.group1.goormdotcom.common.apiPayload.ApiResponse<StockAdjustmentResponseDto> increaseStocks(
         @RequestBody @Valid StockAdjustmentRequestDto stockAdjustmentRequestDto
     );
 }

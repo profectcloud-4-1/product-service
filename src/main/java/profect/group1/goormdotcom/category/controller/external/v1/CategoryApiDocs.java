@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.UUID;
 
-import profect.group1.goormdotcom.apiPayload.ApiResponse;
+import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.category.controller.external.v1.dto.CategoryRequestDto;
 import profect.group1.goormdotcom.category.controller.external.v1.dto.CategoryResponseDto;
 import profect.group1.goormdotcom.category.controller.external.v1.dto.CategoryTreeResponseDto;

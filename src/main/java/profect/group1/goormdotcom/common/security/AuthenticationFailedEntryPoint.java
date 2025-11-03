@@ -8,8 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
-import profect.group1.goormdotcom.apiPayload.ApiResponse;
-import profect.group1.goormdotcom.apiPayload.code.status.ErrorStatus;
+import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
+import profect.group1.goormdotcom.common.apiPayload.code.status.ErrorStatus;
 
 import java.io.IOException;
 

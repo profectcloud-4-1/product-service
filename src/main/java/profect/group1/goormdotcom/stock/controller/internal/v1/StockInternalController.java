@@ -7,14 +7,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import profect.group1.goormdotcom.apiPayload.code.status.ErrorStatus;
+import profect.group1.goormdotcom.common.apiPayload.code.status.ErrorStatus;
 import profect.group1.goormdotcom.stock.controller.internal.v1.dto.ProductStockAdjustmentRequestDto;
 import profect.group1.goormdotcom.stock.controller.internal.v1.dto.StockAdjustmentRequestDto;
 import profect.group1.goormdotcom.stock.controller.internal.v1.dto.StockAdjustmentResponseDto;
 import profect.group1.goormdotcom.stock.domain.exception.InsufficientStockException;
 import profect.group1.goormdotcom.stock.service.StockService;
-import profect.group1.goormdotcom.apiPayload.ApiResponse;
-import profect.group1.goormdotcom.apiPayload.code.status.SuccessStatus;
+import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
+import profect.group1.goormdotcom.common.apiPayload.code.status.SuccessStatus;
 
 import java.util.Map;
 import java.util.ArrayList;
