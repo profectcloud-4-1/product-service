@@ -19,7 +19,7 @@ import profect.group1.goormdotcom.product.controller.external.v1.dto.ProductRequ
 import profect.group1.goormdotcom.product.controller.external.v1.dto.ProductResponseDto;
 import profect.group1.goormdotcom.product.controller.external.v1.dto.UpdateProductRequestDto;
 
-@Tag(name = "Product", description = "상품 API")
+@Tag(name = "상품", description = "상품 API")
 public interface ProductApiDocs {
 
     @Operation(summary = "상품 등록", description = "SELLER 전용", security = { @SecurityRequirement(name = "bearerAuth") })
