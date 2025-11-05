@@ -1,10 +1,16 @@
 services:
   app:
-    image: docker.hyeonwoo.com/goormdotcom/api-v1:22102701
+    image: goormdotcom-product-service:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: product-service
     ports:
-      - 80:8080
+      - 8081:8081
     environment:
       - SPRING_PROFILES_ACTIVE=dev,secret
     volumes:
       - ./config:/app/config
     user: 1000:1000
+
+

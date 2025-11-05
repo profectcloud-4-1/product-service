@@ -43,6 +43,9 @@ dependencies {
     // eureka client
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
+    // load-balancer
+    implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
+
     // config-server
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
