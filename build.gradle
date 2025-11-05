@@ -34,14 +34,20 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 	// feign client
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0'
+    // eureka client
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+    // config-server
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -52,7 +58,6 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql:42.7.5'
 	
 	// H2 Database (for development)
-	runtimeOnly 'com.h2database:h2'
 
 	// JWT
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.5'

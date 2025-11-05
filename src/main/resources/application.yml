@@ -1,9 +1,13 @@
 spring:
   application:
-    name: "Goormdotcom-Backend"
+    name: goormdotcom-product-service
   profiles:
     active: dev
     include: secret
+
+  config:
+    import:
+      "configserver:"
 
 management:
   endpoints:
