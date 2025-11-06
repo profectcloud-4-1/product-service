@@ -3,9 +3,8 @@ package profect.group1.goormdotcom.review.controller.external.v1;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.review.controller.external.v1.dto.CreateReviewRequestDto;
 import profect.group1.goormdotcom.review.controller.external.v1.dto.ProductReviewListResponseDto;
 import profect.group1.goormdotcom.review.controller.external.v1.dto.ReviewResponseDto;
@@ -25,14 +24,12 @@ public class ReviewController implements ReviewApiDocs{
      * POST /api/v1/reviews
      */
     @PostMapping
-    public ResponseEntity<ReviewResponseDto> createReview(
+    public ApiResponse<ReviewResponseDto> createReview(
             @Valid @RequestBody CreateReviewRequestDto request,
             @RequestHeader("X-User-Id") UUID userId  // 임시: 실제론 Security Context에서
     ) {
         ReviewResponseDto response = reviewService.createReview(request, userId);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+        return ApiResponse.onSuccess(response);
     }
 
     /**
@@ -54,8 +51,7 @@ public class ReviewController implements ReviewApiDocs{
      * PUT /api/v1/reviews/{reviewId}
      */
     @PutMapping("/{reviewId}")
-
-    public ResponseEntity<ReviewResponseDto> updateReview(
+    public ApiResponse<ReviewResponseDto> updateReview(
             @PathVariable UUID reviewId,
             @Valid @RequestBody UpdatedReviewRequestDto request,
             @RequestHeader("X-User-Id") UUID userId
@@ -67,7 +63,7 @@ public class ReviewController implements ReviewApiDocs{
         }
 
         ReviewResponseDto response = reviewService.updateReview(reviewId, request, userId);
-        return ResponseEntity.ok(response);
+        return ApiResponse.onSuccess(response);
     }
 
     /**
@@ -75,8 +71,7 @@ public class ReviewController implements ReviewApiDocs{
      * DELETE /api/v1/reviews/{reviewId}
      */
     @DeleteMapping("/{reviewId}")
-
-    public ResponseEntity<Void> deleteReview(
+    public ApiResponse<String> deleteReview(
             @PathVariable UUID reviewId,
             @RequestHeader(value = "X-User-Id", required = false) UUID userId
     ) {
@@ -87,7 +82,7 @@ public class ReviewController implements ReviewApiDocs{
         }
 
         reviewService.deleteReview(reviewId, userId);
-        return ResponseEntity.noContent().build();
+        return ApiResponse.onSuccess("Deleted.");
     }
 
     /**
@@ -95,7 +90,7 @@ public class ReviewController implements ReviewApiDocs{
      * GET /api/v1/reviews/products/{productId}
      */
     @GetMapping("/products/{productId}")
-    public ResponseEntity<ProductReviewListResponseDto> getProductReviews(
+    public ApiResponse<ProductReviewListResponseDto> getProductReviews(
             @PathVariable UUID productId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -107,7 +102,7 @@ public class ReviewController implements ReviewApiDocs{
         );
 
         // ResponseEntity에 DTO 담아서 반환
-        return ResponseEntity.ok(response);
+        return ApiResponse.onSuccess(response);
     }
 }
 

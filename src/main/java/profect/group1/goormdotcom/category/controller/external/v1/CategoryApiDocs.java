@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.UUID;
 
-import profect.group1.goormdotcom.apiPayload.ApiResponse;
+import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.category.controller.external.v1.dto.CategoryRequestDto;
 import profect.group1.goormdotcom.category.controller.external.v1.dto.CategoryResponseDto;
 import profect.group1.goormdotcom.category.controller.external.v1.dto.CategoryTreeResponseDto;
 
-@Tag(name = "Category", description = "카테고리 API")
+@Tag(name = "카테고리", description = "카테고리 API")
 public interface CategoryApiDocs {
 
     @Operation(summary = "카테고리 트리 조회 (GET /api/v1/category)", description = "루트(ROOT)부터 전체 카테고리 트리를 반환합니다.")

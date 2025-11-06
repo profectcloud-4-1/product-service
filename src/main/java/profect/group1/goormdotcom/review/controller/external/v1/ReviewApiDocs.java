@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +19,7 @@ import profect.group1.goormdotcom.review.controller.external.v1.dto.UpdatedRevie
 
 import java.util.UUID;
 
+@Tag(name = "리뷰", description = "리뷰 API")
 public interface ReviewApiDocs {
 
     @Operation(
@@ -36,7 +38,7 @@ public interface ReviewApiDocs {
                     )
             )
     )
-    ResponseEntity<ReviewResponseDto> createReview(
+    profect.group1.goormdotcom.common.apiPayload.ApiResponse<ReviewResponseDto> createReview(
             @Parameter(description = "리뷰 작성 요청 데이터")
             @RequestBody CreateReviewRequestDto request,
 
@@ -60,7 +62,7 @@ public interface ReviewApiDocs {
                     )
             )
     )
-    ResponseEntity<ReviewResponseDto> updateReview(
+    profect.group1.goormdotcom.common.apiPayload.ApiResponse<ReviewResponseDto> updateReview(
             @Parameter(description = "리뷰 ID") @PathVariable UUID reviewId,
             @Parameter(description = "수정할 리뷰 데이터") @RequestBody UpdatedReviewRequestDto request,
             @Parameter(description = "유저 ID (X-User-Id 헤더)") @RequestHeader("X-User-Id") UUID userId
@@ -82,7 +84,7 @@ public interface ReviewApiDocs {
                     )
             )
     )
-    ResponseEntity<Void> deleteReview(
+    profect.group1.goormdotcom.common.apiPayload.ApiResponse<String> deleteReview(
             @Parameter(description = "리뷰 ID") @PathVariable UUID reviewId,
             @Parameter(description = "유저 ID (X-User-Id 헤더, 없으면 더미 값 사용)")
             @RequestHeader(value = "X-User-Id", required = false) UUID userId
@@ -104,7 +106,7 @@ public interface ReviewApiDocs {
                     )
             )
     )
-    ResponseEntity<ProductReviewListResponseDto> getProductReviews(
+    profect.group1.goormdotcom.common.apiPayload.ApiResponse<ProductReviewListResponseDto> getProductReviews(
             @Parameter(description = "상품 ID") @PathVariable UUID productId,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기 (기본값: 10)") @RequestParam(defaultValue = "10") int size,

@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 import java.util.UUID;
 
-import profect.group1.goormdotcom.apiPayload.ApiResponse;
+import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.product.controller.external.v1.dto.DeleteProductRequestDto;
 import profect.group1.goormdotcom.product.controller.external.v1.dto.ProductRequestDto;
 import profect.group1.goormdotcom.product.controller.external.v1.dto.ProductResponseDto;
 import profect.group1.goormdotcom.product.controller.external.v1.dto.UpdateProductRequestDto;
 
-@Tag(name = "Product", description = "상품 API")
+@Tag(name = "상품", description = "상품 API")
 public interface ProductApiDocs {
 
     @Operation(summary = "상품 등록", description = "SELLER 전용", security = { @SecurityRequirement(name = "bearerAuth") })

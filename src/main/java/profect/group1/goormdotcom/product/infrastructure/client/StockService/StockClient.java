@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import profect.group1.goormdotcom.apiPayload.ApiResponse;
+import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.common.config.FeignConfig;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockRequestDto;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockResponseDto;
