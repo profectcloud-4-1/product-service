@@ -37,7 +37,7 @@ public class ProductService {
     private final StockClient stockClient;
     private final PresignedClient presignedClient;
 
-    @Value("${aws.cloudfront.domain}")
+    @Value("${spring.aws.cloudfront.domain}")
     private String cloudfrontDomain;
 
     public UUID createProduct(

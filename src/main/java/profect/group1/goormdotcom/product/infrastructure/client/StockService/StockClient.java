@@ -15,6 +15,7 @@ import java.util.UUID;
 
 @FeignClient(
     name = "product-to-stock",
+    url = "${service.order.url}",
     fallback = StockClientFallback.class,
     configuration = FeignConfig.class
 )
