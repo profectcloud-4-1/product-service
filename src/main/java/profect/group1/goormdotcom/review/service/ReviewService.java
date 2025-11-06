@@ -23,13 +23,15 @@ import profect.group1.goormdotcom.review.controller.external.v1.dto.ReviewRespon
 import profect.group1.goormdotcom.review.controller.external.v1.dto.UpdatedReviewRequestDto;
 import profect.group1.goormdotcom.review.controller.external.v1.mapper.ReviewDtoMapper;
 import profect.group1.goormdotcom.review.domain.Review;
+import profect.group1.goormdotcom.review.infrastructure.client.OrderClient;
+import profect.group1.goormdotcom.review.infrastructure.client.PresignedClient;
+import profect.group1.goormdotcom.review.infrastructure.client.dto.ObjectKeyResponseDto;
 import profect.group1.goormdotcom.review.repository.ReviewImageRepository;
 import profect.group1.goormdotcom.review.repository.ReviewRepository;
 import profect.group1.goormdotcom.review.repository.entity.ReviewEntity;
 import profect.group1.goormdotcom.review.repository.entity.ReviewImageEntity;
 import profect.group1.goormdotcom.review.repository.mapper.ReviewMapper;
 
-import java.awt.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,7 +52,7 @@ public class ReviewService {
     private final PresignedClient presignedClient;
     private final OrderClient orderClient;
 
-    @Value("${aws.cloudfront.domain}")
+    @Value("${spring.aws.cloudfront.domain}")
     private String cloudfrontDomain;
 
     /**

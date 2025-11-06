@@ -1,4 +1,4 @@
-package profect.group1.goormdotcom.review.service;
+package profect.group1.goormdotcom.review.infrastructure.client.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

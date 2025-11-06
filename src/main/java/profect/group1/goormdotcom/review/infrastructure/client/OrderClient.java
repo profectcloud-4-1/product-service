@@ -1,4 +1,4 @@
-package profect.group1.goormdotcom.review.service;
+package profect.group1.goormdotcom.review.infrastructure.client;
 
 
 import org.springframework.cloud.openfeign.FeignClient;
@@ -9,9 +9,8 @@ import java.util.UUID;
 
 @FeignClient(
         name = "review-to-order",
-        url = "${service.order.url}",
-
-        )
+        url = "${service.order.url}"
+)
 public interface OrderClient {
     /**
      * userId + productId로 orderId 조회

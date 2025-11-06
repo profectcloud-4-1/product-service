@@ -13,6 +13,7 @@ import profect.group1.goormdotcom.product.infrastructure.client.PresignedService
 
 @FeignClient(
     name = "product-to-presigned",
+    url = "${service.order.url}",
     fallback = PresignedClientFallback.class,
     configuration = FeignConfig.class
 )
