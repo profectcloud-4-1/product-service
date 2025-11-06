@@ -1,9 +1,8 @@
 spring:
   application:
-    name: "Goormdotcom-Backend"
+    name: "product-service"
   profiles:
-    active: dev
-    include: secret
+    active: ${PRODUCT_PROFILE:dev}
 
 management:
   endpoints:
