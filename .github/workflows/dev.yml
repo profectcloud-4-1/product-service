@@ -1,4 +1,4 @@
-name: order-service dev-branch CI workflow
+name: product-service dev-branch CI workflow
 
 on:
   pull_request:
