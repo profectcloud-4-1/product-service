@@ -59,12 +59,15 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
 
-      //aws s3
-      implementation platform('software.amazon.awssdk:bom:2.25.40')
-      implementation 'software.amazon.awssdk:s3'
+    //aws s3
+    implementation platform('software.amazon.awssdk:bom:2.25.40')
+    implementation 'software.amazon.awssdk:s3'
 
     //JSON 직/역직렬화
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    //.env
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 }
 
 dependencyManagement {

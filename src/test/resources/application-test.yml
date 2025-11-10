@@ -1,0 +1,52 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop   # 테스트할 때마다 스키마 새로 만들고 끝나면 드롭
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+    open-in-view: false
+
+  h2:
+    console:
+      enabled: true           # 필요 없으면 빼도 됨
+
+  sql:
+    init:
+      mode: never             # 굳이 data.sql, schema.sql 안쓰면 never로 둬도 됨
+
+aws:
+  s3:
+    access-key: ${AWS_S3_ACCESS_KEY}
+    secret-key: ${AWS_S3_SECRET_KEY}
+    region: ${AWS_S3_REGION}
+    bucket: ${AWS_S3_BUCKET}
+  cloudfront:
+    domain: ${CLOUDFRONT_DOMAIN}
+
+
+server:
+  port: 8765
+
+service:
+  user:
+    url: http://localhost:8080
+  order:
+    url: http://localhost:8080
+  payment:
+    url: http://localhost:8080
+
+
+stock:
+  adjust:
+    retry:
+      base-off-ms: ${BASE_OFF_MS}
+      max-retries: ${MAX_RETRIES}
+
