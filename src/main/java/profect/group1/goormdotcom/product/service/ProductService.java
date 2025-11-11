@@ -37,7 +37,7 @@ public class ProductService {
     private final StockClient stockClient;
     private final FileStorageManager fileStorageManager;
 
-    @Value("${spring.aws.cloudfront.domain}")
+    @Value("${aws.cloudfront.domain}")
     private String cloudfrontDomain;
 
     public UUID createProduct(

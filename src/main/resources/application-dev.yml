@@ -49,3 +49,9 @@ service:
     url: ${ORDER_SERVICE_URL}
   payment:
     url: ${PAYMENT_SERVICE_URL}
+
+stock:
+  adjust:
+    retry:
+      base-off-ms: ${BASE_OFF_MS}
+      max-retries: ${MAX_RETRIES}
