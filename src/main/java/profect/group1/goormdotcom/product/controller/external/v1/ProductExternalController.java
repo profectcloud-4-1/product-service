@@ -9,6 +9,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.common.apiPayload.code.status.SuccessStatus;
+import profect.group1.goormdotcom.common.file.FileStorageManager;
+import profect.group1.goormdotcom.common.file.dto.ObjectKeyResponse;
+import profect.group1.goormdotcom.common.file.dto.PresignedUrlResponse;
+import profect.group1.goormdotcom.common.file.dto.UploadUrlRequest;
 import profect.group1.goormdotcom.product.controller.external.v1.dto.DeleteProductRequestDto;
 import profect.group1.goormdotcom.product.controller.external.v1.dto.ProductRequestDto;
 import profect.group1.goormdotcom.product.controller.external.v1.dto.ProductResponseDto;
@@ -32,8 +36,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RestController
 @RequestMapping("/api/v1/product")
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductController implements ProductApiDocs {
+public class ProductExternalController implements ProductApiDocs {
     private final ProductService productService;
+    private final FileStorageManager fileStorageManager;
 
     @PostMapping("/register")
     @PreAuthorize("hasRole('MASTER')")
@@ -109,5 +114,38 @@ public class ProductController implements ProductApiDocs {
         
         productService.deleteProductImage(imageId);
         return ApiResponse.of(SuccessStatus._OK, imageId);
+    }
+
+    // presigned URL 발급
+    @PostMapping("/images/upload-url")
+    @PreAuthorize("hasRole('MASTER')")
+    public ApiResponse<PresignedUrlResponse> generateImageUploadUrl(
+            @RequestBody @Valid UploadUrlRequest request
+    ) {
+        PresignedUrlResponse response = fileStorageManager.generateUploadUrl(
+                request.getFilename(),
+                request.getDomain(),
+                request.getContentType()
+        );
+        return ApiResponse.of(SuccessStatus._OK, response);
+    }
+
+    // 업로드 확정
+    @PostMapping("/images/{fileId}/confirm")
+    @PreAuthorize("hasRole('MASTER')")
+    public ApiResponse<String> confirmImageUpload(
+            @PathVariable UUID fileId
+    ) {
+        fileStorageManager.confirmUpload(fileId);
+        return ApiResponse.of(SuccessStatus._OK, "confirmed");
+    }
+
+    // objectKey(또는 URL) 조회
+    @GetMapping("/images/{fileId}/url")
+    public ApiResponse<ObjectKeyResponse> getImageObjectKey(
+            @PathVariable UUID fileId
+    ) {
+        String objectKey = fileStorageManager.getObjectKey(fileId);
+        return ApiResponse.of(SuccessStatus._OK, new ObjectKeyResponse(objectKey));
     }
 }

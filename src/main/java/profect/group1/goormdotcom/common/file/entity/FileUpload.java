@@ -1,4 +1,4 @@
-package profect.group1.goormdotcom.presigned.repository.entity;
+package profect.group1.goormdotcom.common.file.entity;
 
 
 import jakarta.persistence.*;
@@ -9,8 +9,8 @@ import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
 import profect.group1.goormdotcom.common.domain.BaseEntity;
-import profect.group1.goormdotcom.presigned.domain.FileDomain;
-import profect.group1.goormdotcom.presigned.domain.FileStatus;
+import profect.group1.goormdotcom.common.file.domain.FileDomain;
+import profect.group1.goormdotcom.common.file.domain.FileStatus;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

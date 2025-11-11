@@ -63,8 +63,11 @@ public class StockService {
 
     @Transactional
     public Stock deleteStock(UUID productId) {
-        StockEntity entity = stockRepository.deleteByProductId(productId);
-        return StockMapper.toDomain(entity);
+        StockEntity entity = getStockEntity(productId);
+        stockRepository.deleteByProductId(productId);
+
+        Stock stock = StockMapper.toDomain(entity);
+        return stock;
     }
 
     public Boolean decreaseStocks(Map<UUID, Integer> requestedQuantityMap) {

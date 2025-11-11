@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 @RestController
 @RequestMapping("/api/v1/category")
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public class CategoryController implements CategoryApiDocs{
+public class CategoryExternalController implements CategoryApiDocs{
     private final CategoryService categoryService;
     private final CategroyTreeService categoryTreeService;
 

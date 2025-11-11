@@ -1,4 +1,4 @@
-package profect.group1.goormdotcom.presigned.config;
+package profect.group1.goormdotcom.common.file.config;
 
 
 import lombok.Getter;

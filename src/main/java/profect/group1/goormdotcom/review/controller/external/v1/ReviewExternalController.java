@@ -16,7 +16,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/reviews")
 @RequiredArgsConstructor
-public class ReviewController implements ReviewApiDocs{
+public class ReviewExternalController implements ReviewApiDocs{
     private final ReviewService reviewService;
 
     /**

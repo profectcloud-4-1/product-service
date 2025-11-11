@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequestMapping("/api/v1/stock")
 @RequiredArgsConstructor
 @Slf4j
-public class StockController implements StockApiDocs {
+public class StockExternalController implements StockApiDocs {
 
     private final StockService stockService;
 
@@ -66,8 +66,8 @@ public class StockController implements StockApiDocs {
     public ApiResponse<UUID> deleteStock(
         @PathVariable(value = "productId") UUID productId
     ) {
-        stockService.deleteStock(productId);
-        return ApiResponse.of(SuccessStatus._OK, productId);
+        Stock stock = stockService.deleteStock(productId);
+        return ApiResponse.of(SuccessStatus._OK, stock.getProductId());
     }
 
 }

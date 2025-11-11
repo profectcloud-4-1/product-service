@@ -1,4 +1,4 @@
-package profect.group1.goormdotcom.presigned.domain;
+package profect.group1.goormdotcom.common.file.domain;
 
 
 import lombok.Getter;

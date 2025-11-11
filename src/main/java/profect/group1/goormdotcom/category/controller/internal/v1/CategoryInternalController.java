@@ -1,4 +1,4 @@
-package profect.group1.goormdotcom.category.controller.external.v1;
+package profect.group1.goormdotcom.category.controller.internal.v1;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
