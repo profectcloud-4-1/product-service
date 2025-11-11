@@ -1,0 +1,39 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  aws:
+    s3:
+      access-key: dummy
+      secret-key: dummy
+      region: ap-northeast-2
+      bucket: dummy-bucket
+    cloudfront:
+      domain: https://dummy.cloudfront.net
+
+server:
+  port: 0
+
+service:
+  product:
+    url: http://localhost:8081
+  order:
+    url: http://localhost:8082
+  payment:
+    url: http://localhost:8083
