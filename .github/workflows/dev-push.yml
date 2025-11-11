@@ -1,0 +1,116 @@
+name: Product-service dev-branch pull-request CI workflow
+
+on:
+  push:
+    branches: [ "dev" ]
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}                 # 예: ap-northeast-2
+      ECR_REPOSITORY: ${{ vars.AWS_ECR_REPOSITORY }}     # 예: goorm/app-service (슬래시 가능)
+      CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}         # 예: goorm-app-service (슬래시 X)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      # 1) ECR 로그인 (Runner)
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 2) REGISTRY를 env로 저장
+      - name: Set registry env
+        run: echo "REGISTRY=${{ steps.login-ecr.outputs.registry }}" >> "$GITHUB_ENV"
+
+      # 3) Docker meta (이미지/태그 생성 규칙)
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
+          tags: |
+            # sha 태그 하나 (예: 9c1a3b2)
+            type=sha,format=short
+
+      # 4) IMAGE_NAME 환경변수로 내보내기
+      - name: Export image info
+        run: |
+          # 첫 번째 태그만 사용 (형태: REGISTRY/REPO:TAG)
+          IMAGE_NAME="$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)"
+          echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_ENV"
+          echo "IMAGE_NAME=$IMAGE_NAME"
+          echo "CONTAINER_NAME=${{ env.CONTAINER_NAME }}"
+
+      # 5) Build & Push to ECR
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      # 6) Deploy
+      - name: Deploy via SSH to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEV_EC2_HOST }}
+          username: ${{ secrets.DEV_EC2_USER }}
+          key: ${{ secrets.DEV_EC2_SSH_KEY }}
+          # 이 envs에 적은 것만 EC2 쪽으로 넘어감
+          envs: AWS_REGION,REGISTRY,IMAGE_NAME,CONTAINER_NAME,ECR_REPOSITORY
+          script: |
+            # 에러 나면 바로 실패
+            set -Eeuo pipefail
+
+            echo "== ECR 로그인 (EC2) =="
+            aws ecr get-login-password --region "$AWS_REGION" \
+              | docker login --username AWS --password-stdin "$REGISTRY"
+
+            echo "== 최신 이미지 pull =="
+            docker pull "$IMAGE_NAME"
+
+            echo "== 기존 컨테이너 종료 (ECR_REPOSITORY 기준) =="
+            BASE_IMAGE_PREFIX="$REGISTRY/$ECR_REPOSITORY:"
+
+            # 이미지 이름에 REGISTRY/ECR_REPOSITORY: 로 시작하는 컨테이너 전부 찾기
+            OLD_CONTAINER_IDS=$(docker ps --format '{{.ID}} {{.Image}}' \
+              | awk -v prefix="$BASE_IMAGE_PREFIX" '$2 ~ "^"prefix { print $1 }')
+
+            if [ -n "${OLD_CONTAINER_IDS:-}" ]; then
+              echo "종료할 기존 컨테이너: $OLD_CONTAINER_IDS"
+              for cid in $OLD_CONTAINER_IDS; do
+                echo "컨테이너 중지: $cid"
+                docker stop "$cid"
+                echo "컨테이너 삭제: $cid"
+                docker rm "$cid"
+              done
+            else
+              echo "ECR_REPOSITORY=$ECR_REPOSITORY 로 도는 컨테이너 없음"
+            fi
+
+            echo "== 새 컨테이너 실행 =="
+            docker run -d \
+              --name "$CONTAINER_NAME" \
+              --network goormdotcom-net \
+              --restart unless-stopped \
+              -p 80:8080 \
+              "$IMAGE_NAME"
+
+            echo "배포 완료"

@@ -1,11 +1,7 @@
 spring:
-  config:
-    activate:
-      on-profile: test
-
   datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
     username: sa
     password:
 
@@ -13,10 +9,19 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: false
-    open-in-view: false
     properties:
       hibernate:
         format_sql: true
+        show_sql: true
+    open-in-view: false
+
+  h2:
+    console:
+      enabled: true           # 필요 없으면 빼도 됨
+
+  sql:
+    init:
+      mode: never             # 굳이 data.sql, schema.sql 안쓰면 never로 둬도 됨
 
   aws:
     s3:
@@ -37,3 +42,11 @@ service:
     url: http://localhost:8082
   payment:
     url: http://localhost:8083
+
+
+stock:
+  adjust:
+    retry:
+      base-off-ms: 20
+      max-retries: 3
+

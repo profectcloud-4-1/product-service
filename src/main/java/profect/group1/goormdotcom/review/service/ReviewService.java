@@ -52,7 +52,7 @@ public class ReviewService {
     private final PresignedClient presignedClient;
     private final OrderClient orderClient;
 
-    @Value("${spring.aws.cloudfront.domain}")
+    @Value("${aws.cloudfront.domain}")
     private String cloudfrontDomain;
 
     /**
