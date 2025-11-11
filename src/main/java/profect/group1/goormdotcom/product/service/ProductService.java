@@ -12,10 +12,10 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
+import profect.group1.goormdotcom.common.file.FileStorageManager;
+import profect.group1.goormdotcom.common.file.dto.ObjectKeyResponse;
 import profect.group1.goormdotcom.product.domain.Product;
 import profect.group1.goormdotcom.product.domain.ProductImage;
-import profect.group1.goormdotcom.product.infrastructure.client.PresignedService.PresignedClient;
-import profect.group1.goormdotcom.product.infrastructure.client.PresignedService.dto.ObjectKeyResponse;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.StockClient;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockRequestDto;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockResponseDto;
@@ -35,7 +35,7 @@ public class ProductService {
     private final ProductImageRepository productImageRepository;
 
     private final StockClient stockClient;
-    private final PresignedClient presignedClient;
+    private final FileStorageManager fileStorageManager;
 
     @Value("${aws.cloudfront.domain}")
     private String cloudfrontDomain;
@@ -74,7 +74,7 @@ public class ProductService {
 
         // Image confirm 요청
         for (UUID imageId: imageIds) {
-            presignedClient.confirmUpload(imageId);
+            fileStorageManager.confirmUpload(imageId);
         }
         
         productRepository.save(productEntity);
@@ -108,7 +108,7 @@ public class ProductService {
 
         // Image confirm 요청
         for (UUID imageId: imageIds) {
-            presignedClient.confirmUpload(imageId);
+            fileStorageManager.confirmUpload(imageId);
         }
         
         productRepository.save(newProductEntity);
@@ -159,18 +159,17 @@ public class ProductService {
         List<ProductImageEntity> imageEntities = productImageRepository.findByProductId(productId);
         // TODO: presigned server에서 여러 이미지의 object key를 한번에 조회할 수 있는 api가 필요할 듯
         for (ProductImageEntity imageEntity: imageEntities) {
-            
-            ResponseEntity<ObjectKeyResponse> response = presignedClient.getObjectKey(imageEntity.getId());
-            ObjectKeyResponse objectKeyResponse = response.getBody();
-            if (objectKeyResponse == null) {
-                // TODO: 이미지가 없을 경우 어떻게 처리? 
+            String objectKey;
+            try {
+                objectKey = fileStorageManager.getObjectKey(imageEntity.getId());
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                // TODO: 이미지가 없을 경우 어떻게 처리?
                 // 기본 이미지가 있어야 할 것 같다. (goorm 이미지?)
-                objectKeyResponse = new ObjectKeyResponse("");
+                objectKey = "";
             }
-            
             // TODO: cloudfront 도메인을 presigned에서 처리하는게 더 좋을 듯
             // 도메인 변경될때 이 변경에 대응할 책임이 presigned에 있다고 보임.
-            urlMapping.put(imageEntity,  cloudfrontDomain + objectKeyResponse.getObjectKey());
+            urlMapping.put(imageEntity,  cloudfrontDomain + objectKey);
         }
         
         List<ProductImage> images = urlMapping.keySet().stream()

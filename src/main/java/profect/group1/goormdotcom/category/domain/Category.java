@@ -28,4 +28,8 @@ public class Category {
         this.parentId = parentId;
         this.name = name;
     }
+
+    public void updateName(final String newName) {
+        this.name = newName;
+    }
 }

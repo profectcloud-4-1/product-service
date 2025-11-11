@@ -19,4 +19,11 @@ public class CategoryMapper {
             entity.getDeletedAt()
         );
     }
+
+    public static CategoryEntity toEntity(final Category category) {
+        return new CategoryEntity(
+                category.getParentId(),
+                category.getName()
+        );
+    }
 }
