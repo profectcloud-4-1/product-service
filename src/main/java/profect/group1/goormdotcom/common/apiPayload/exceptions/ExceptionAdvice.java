@@ -32,6 +32,13 @@ import java.util.stream.Collectors;
 @RestControllerAdvice(annotations = {RestController.class})
 public class ExceptionAdvice extends ResponseEntityExceptionHandler {
 
+    // IllegalArgumentException 핸들러 추가
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException e, WebRequest request) {
+        BaseErrorCode errorCode = ErrorStatus._BAD_REQUEST;
+        return handleExceptionInternalFalse(e, errorCode, HttpHeaders.EMPTY, HttpStatus.BAD_REQUEST, request, e.getMessage());
+    }
+
     // 파라미터 유효성 검사 실패 처리
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> validation(ConstraintViolationException e, WebRequest request) {

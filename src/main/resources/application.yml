@@ -2,7 +2,7 @@ spring:
   application:
     name: "product-service"
   profiles:
-    active: ${PRODUCT_PROFILE:dev}
+    active: dev #${PRODUCT_PROFILE:dev}
 
 management:
   endpoints:

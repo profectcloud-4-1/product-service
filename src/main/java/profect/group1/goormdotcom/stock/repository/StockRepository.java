@@ -11,5 +11,5 @@ public interface StockRepository extends JpaRepository<StockEntity, UUID>{
     
     public Optional<StockEntity> findByProductId(UUID productId);
     
-    public StockEntity deleteByProductId(UUID productId);
+    public void deleteByProductId(UUID productId);
 }
