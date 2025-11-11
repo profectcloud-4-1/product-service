@@ -32,6 +32,8 @@ public class SecurityConfig {
                 // 익명사용자 비활성화
                 .anonymous(anon -> anon.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/public/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         // 스웨거 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**", "/api-docs", "/swagger-ui.html", "/h2-console/**").permitAll()
                         // 회원가입, 로그인 허용
@@ -42,8 +44,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/orders/*/payment/fail").permitAll()
                         // 내부api 허용
                         .requestMatchers("/internal/**").permitAll()
-                        .requestMatchers("/public/**").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(userHeaderAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
