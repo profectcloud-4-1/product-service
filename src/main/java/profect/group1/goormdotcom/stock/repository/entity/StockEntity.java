@@ -26,7 +26,11 @@ import profect.group1.goormdotcom.stock.domain.exception.InsufficientStockExcept
 @Table(name = "p_stock")
 // @Filter(name = "deletedFilter", condition = "deleted_at IS NULL")
 @SQLRestriction("deleted_at IS NULL")
-@SQLDelete(sql = "update p_stock set deleted_at = NOW() WHERE id = ?")
+@SQLDelete(
+        sql = "UPDATE p_stock " +
+                "SET deleted_at = CURRENT_TIMESTAMP, version = version + 1 " +
+                "WHERE id = ? AND version = ?"
+)
 public class StockEntity extends BaseEntity{
     
     @Id

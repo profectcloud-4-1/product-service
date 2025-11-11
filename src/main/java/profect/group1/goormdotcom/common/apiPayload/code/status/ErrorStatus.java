@@ -35,8 +35,14 @@ public enum ErrorStatus implements BaseErrorCode {
     _PAYMENT_CANCEL_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PAYMENT500", "결제 취소 처리 중 오류가 발생했습니다."),
     _INVALID_CANCEL_AMOUNT(HttpStatus.BAD_REQUEST, "PAYMENT400", "취소 금액이 남은 결제 금액을 초과했습니다."),
 
+    PARENT_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY404", "부모 카테고리가 존재하지 않습니다."),
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY404", "카테고리가 존재하지 않습니다."),
+    CATEGORY_NAME_DUPLICATED(HttpStatus.BAD_REQUEST, "CATEGORY409", "부모 카테고리와 같은 이름을 가질 수 없습니다."),
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCT404", "상품이 존재하지 않습니다."),
     _INSUFFICIENT_STOCK_QUANTITY(HttpStatus.BAD_REQUEST, "STOCK400", "현재 재고가 요청한 수보다 적습니다."),
-    _ADJUST_STOCK_FAILED(HttpStatus.CONFLICT, "STOCK409", "재고 변경에 실패했습니다.");
+    _ADJUST_STOCK_FAILED(HttpStatus.CONFLICT, "STOCK409", "재고 변경에 실패했습니다."),
+
+    IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "IMAGE404", "이미지가 존재하지 않습니다");
 
     private final HttpStatus httpStatus;
     private final String code;
