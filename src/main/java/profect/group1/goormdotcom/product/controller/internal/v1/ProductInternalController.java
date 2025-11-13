@@ -23,7 +23,7 @@ import java.util.UUID;
 public class ProductInternalController implements ProductInternalApiDocs {
     private final ProductService productService;
 
-    @GetMapping
+    @GetMapping("/cart")
     public ApiResponse<List<CartProductResponseDto>> getCartProducts(
             @RequestParam(value = "id") List<UUID> productIds
     ) {
