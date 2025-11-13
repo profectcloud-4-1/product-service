@@ -29,8 +29,6 @@ import profect.group1.goormdotcom.common.domain.BaseEntity;
 public class CategoryEntity extends BaseEntity{
 
     @Id
-    @GeneratedValue
-    @UuidGenerator
     @JdbcTypeCode(SqlTypes.UUID)
     @Column(columnDefinition = "uuid", nullable = false)
     private UUID id;
