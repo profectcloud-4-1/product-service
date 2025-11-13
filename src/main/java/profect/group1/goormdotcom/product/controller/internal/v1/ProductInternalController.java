@@ -25,7 +25,7 @@ public class ProductInternalController implements ProductInternalApiDocs {
 
     @GetMapping("/cart")
     public ApiResponse<List<CartProductResponseDto>> getCartProducts(
-            @RequestParam(value = "id") List<UUID> productIds
+            @RequestParam(value = "product-id") List<UUID> productIds
     ) {
         List<ProductSummary> products = productService.getCartProducts(productIds);
         return ApiResponse.onSuccess(products.stream().map(CartProductDtoMapper::toProductResponseDto).toList());
