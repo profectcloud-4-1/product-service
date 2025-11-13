@@ -24,4 +24,9 @@ public class StockClientFallback implements StockClient{
     public ApiResponse<StockResponseDto> updateStock(UUID productId, Integer stockQuantity) {
         return ApiResponse.onFailure(ErrorStatus._INTERNAL_SERVER_ERROR.getCode(), ErrorStatus._INTERNAL_SERVER_ERROR.getMessage(), null);
     }
+
+    @Override
+    public ApiResponse<StockResponseDto> getStock(UUID productId) {
+        return ApiResponse.onFailure(ErrorStatus._INTERNAL_SERVER_ERROR.getCode(), ErrorStatus._INTERNAL_SERVER_ERROR.getMessage(), null);
+    }
 }
