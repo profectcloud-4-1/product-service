@@ -35,7 +35,8 @@ public class ProductRepositoryTest {
                 name,
                 price,
                 UUID.randomUUID(),
-                "Test Description"
+                "Test Description",
+                "test-image.jpg"
         );
     }
 
@@ -78,7 +79,8 @@ public class ProductRepositoryTest {
                     "Updated Name",
                     15000,
                     UUID.randomUUID(),
-                    originalProduct.getDescription()
+                    originalProduct.getDescription(),
+                    originalProduct.getMainImageUri()
             );
             productRepository.save(updatedInfo);
             entityManager.flush();
@@ -88,6 +90,7 @@ public class ProductRepositoryTest {
             ProductEntity foundAfterUpdate = entityManager.find(ProductEntity.class, originalProduct.getId());
             assertThat(foundAfterUpdate.getName()).isEqualTo("Updated Name");
             assertThat(foundAfterUpdate.getPrice()).isEqualTo(15000);
+            assertThat(foundAfterUpdate.getMainImageUri()).isEqualTo(originalProduct.getMainImageUri());
         }
     }
 
