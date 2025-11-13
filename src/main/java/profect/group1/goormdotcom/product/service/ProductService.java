@@ -107,7 +107,7 @@ public class ProductService {
         // }
 
         ProductEntity newProductEntity = new ProductEntity(
-            productId, productEntity.getBrandId(), categoryId, productName, price, mainImageId, description
+            productId, productEntity.getBrandId(), categoryId, productName, price, description, mainImageId, productEntity.getCreatedAt(), null
         );
 
         // 새롭게 업로드 된 이미지 저장. (삭제된 이미지는 프론트엔드에서 delete요청 보내서 soft delete 처리, 새롭게 업로드 된 메타정보 저장.)
