@@ -42,6 +42,8 @@ server:
   port: ${SERVER_PORT}
 
 service:
+  user:
+    url: ${USER_SERVICE_URL}
   product:
     url: ${PRODUCT_SERVICE_URL}
   order:
