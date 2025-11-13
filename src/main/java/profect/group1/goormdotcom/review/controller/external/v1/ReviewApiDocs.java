@@ -25,7 +25,7 @@ public interface ReviewApiDocs {
     @Operation(
             summary = "리뷰 작성 API",
             description = "사용자가 상품에 대한 리뷰를 작성합니다. 이미 동일 주문에 대한 리뷰가 존재하면 400 에러를 반환합니다.",
-            security = { @SecurityRequirement(name = "bearerAuth") }
+            security = { @SecurityRequirement(name = "User-Id"), @SecurityRequirement(name = "User-Roles") }
     )
     @ApiResponse(
             responseCode = "201",
@@ -49,7 +49,7 @@ public interface ReviewApiDocs {
     @Operation(
             summary = "리뷰 수정 API",
             description = "사용자가 작성한 리뷰를 수정합니다. 작성자 본인만 수정할 수 있습니다.",
-            security = { @SecurityRequirement(name = "bearerAuth") }
+            security = { @SecurityRequirement(name = "User-Id"), @SecurityRequirement(name = "User-Roles") }
     )
     @ApiResponse(
             responseCode = "200",
@@ -71,7 +71,7 @@ public interface ReviewApiDocs {
     @Operation(
             summary = "리뷰 삭제 API",
             description = "사용자가 작성한 리뷰를 삭제합니다. 작성자 본인만 삭제할 수 있습니다.",
-            security = { @SecurityRequirement(name = "bearerAuth") }
+            security = { @SecurityRequirement(name = "User-Id"), @SecurityRequirement(name = "User-Roles") }
     )
     @ApiResponse(
             responseCode = "204",
@@ -92,8 +92,7 @@ public interface ReviewApiDocs {
 
     @Operation(
             summary = "상품별 리뷰 목록 조회 API",
-            description = "특정 상품의 리뷰 목록을 페이지네이션 형태로 조회합니다. 기본 정렬은 작성일(createdAt) 내림차순입니다.",
-            security = { @SecurityRequirement(name = "bearerAuth") }
+            description = "특정 상품의 리뷰 목록을 페이지네이션 형태로 조회합니다. 기본 정렬은 작성일(createdAt) 내림차순입니다."
     )
     @ApiResponse(
             responseCode = "200",

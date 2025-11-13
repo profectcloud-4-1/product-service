@@ -44,6 +44,8 @@ public class ProductEntity extends BaseEntity{
     private int price;
     @Column(name = "description")
     private String description;
+    @Column(name = "main_image_id")
+    private UUID mainImageId;
     
     @CreatedDate
     @Column(name = "created_at")
@@ -58,6 +60,7 @@ public class ProductEntity extends BaseEntity{
         final UUID categoryId,
         final String name,
         final int price,
+        final UUID mainImageId,
         final String description
     ) {
         this.id = id;
@@ -65,6 +68,7 @@ public class ProductEntity extends BaseEntity{
         this.categoryId = categoryId;
         this.name = name;
         this.price = price;
+        this.mainImageId = mainImageId;
         this.description = description;
     }
 }

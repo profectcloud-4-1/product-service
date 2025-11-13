@@ -14,13 +14,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product {
-    
     private UUID id;
     private UUID brandId;
     private UUID categoryId;
     private String name;
     private String description;
     private int price;
+    private UUID mainImageId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
