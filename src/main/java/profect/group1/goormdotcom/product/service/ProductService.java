@@ -16,6 +16,7 @@ import profect.group1.goormdotcom.common.file.FileStorageManager;
 import profect.group1.goormdotcom.common.file.dto.ObjectKeyResponse;
 import profect.group1.goormdotcom.product.domain.Product;
 import profect.group1.goormdotcom.product.domain.ProductImage;
+import profect.group1.goormdotcom.product.domain.ProductListItem;
 import profect.group1.goormdotcom.product.domain.ProductStatus;
 import profect.group1.goormdotcom.product.domain.ProductSummary;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.StockClient;
@@ -27,6 +28,10 @@ import profect.group1.goormdotcom.product.repository.entity.ProductEntity;
 import profect.group1.goormdotcom.product.repository.entity.ProductImageEntity;
 import profect.group1.goormdotcom.product.repository.mapper.ProductMapper;
 import profect.group1.goormdotcom.product.repository.mapper.ProductImageMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Slf4j
 @Service
@@ -56,6 +61,8 @@ public class ProductService {
         final List<UUID> imageIds
     ) {
         final UUID productId = UUID.randomUUID();
+
+        String mainImageUri = fileStorageManager.getObjectKey(mainImageId);
         
         ProductEntity productEntity = new ProductEntity(
             productId, 
@@ -64,7 +71,8 @@ public class ProductService {
             productName, 
             price,
             mainImageId,
-            description
+            description,
+            mainImageUri
         );
         
         // 재고 등록 요청
@@ -106,8 +114,9 @@ public class ProductService {
         //     throw new IllegalStateException("Product is not owned by your brand.");
         // }
 
+        String mainImageUri = fileStorageManager.getObjectKey(mainImageId);
         ProductEntity newProductEntity = new ProductEntity(
-            productId, productEntity.getBrandId(), categoryId, productName, price, description, mainImageId, productEntity.getCreatedAt(), null
+            productId, productEntity.getBrandId(), categoryId, productName, price, mainImageId, description, mainImageUri
         );
 
         // 새롭게 업로드 된 이미지 저장. (삭제된 이미지는 프론트엔드에서 delete요청 보내서 soft delete 처리, 새롭게 업로드 된 메타정보 저장.)
@@ -155,6 +164,34 @@ public class ProductService {
         // }
         productRepository.deleteAllById(productIds);
         
+    }
+
+    public List<ProductListItem> getProducts(
+        final int page,
+        final int size,
+        final String sort,
+        final String order,
+        final String keyword
+    ) {
+        // 정렬
+        Sort.Direction direction =
+                (order != null && order.equalsIgnoreCase("asc"))
+                        ? Sort.Direction.ASC
+                        : Sort.Direction.DESC;
+        int zeroBasedPage = Math.max(page - 1, 0);
+        Pageable pageable = PageRequest.of(zeroBasedPage, size, Sort.by(direction, sort));
+
+        Page<ProductEntity> resultPage;
+
+        // keyword가 없는 경우 전체 조회
+        if (keyword == null || keyword.isBlank()) {
+            resultPage = productRepository.findAll(pageable);
+        } else {
+            // keyword가 있는 경우 LIKE 검색
+            resultPage = productRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        }
+
+        return resultPage.getContent().stream().map((entity) -> ProductMapper.toProductListItem(entity, cloudfrontDomain)).toList();
     }
 
     public Product getProduct(
