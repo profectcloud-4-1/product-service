@@ -54,6 +54,7 @@ public class ProductServiceTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(productService, "cloudfrontDomain", "https://test-domain.com/");
+        ReflectionTestUtils.setField(productService, "defaultImageObjectKey", "img.jpg");
     }
 
     private void given_재고_등록에_성공한다() {
@@ -309,7 +310,7 @@ public class ProductServiceTest {
             ProductSummary s = summaries.get(0);
             assertThat(s.getId()).isEqualTo(null);
             assertThat(s.getStatus().name()).isEqualTo("NOT_EXIST");
-            assertThat(s.getMainImage()).isNull();
+            assertThat(s.getMainImage().getImageUrl()).isEqualTo("https://test-domain.com/img.jpg");
             verifyNoInteractions(stockClient);
         }
 
