@@ -17,7 +17,8 @@ public class ProductMapper {
             entity.getName(), 
             entity.getDescription(), 
             entity.getPrice(),
-            entity.getCreatedAt(), 
+            entity.getMainImageId(),
+            entity.getCreatedAt(),
             entity.getUpdatedAt(), 
             entity.getDeletedAt(), 
             imageEntities.stream().map(ProductImageMapper::toDomain).toList()
@@ -32,6 +33,7 @@ public class ProductMapper {
             entity.getName(), 
             entity.getDescription(), 
             entity.getPrice(),
+            entity.getMainImageId(),
             entity.getCreatedAt(), 
             entity.getUpdatedAt(), 
             entity.getDeletedAt(), 

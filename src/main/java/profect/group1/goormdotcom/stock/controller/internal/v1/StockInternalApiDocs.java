@@ -19,7 +19,9 @@ public interface StockInternalApiDocs {
 
     @Operation(
         summary = "재고 차감",
-        description = "여러 상품의 재고를 일괄 차감합니다. 주문 처리 시 사용됩니다."
+        description = "여러 상품의 재고를 일괄 차감합니다. 주문 처리 시 사용됩니다.",
+        security = { @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "User-Id"),
+                     @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "User-Roles") }
     )
     @ApiResponses({
         @ApiResponse(
@@ -58,7 +60,9 @@ public interface StockInternalApiDocs {
 
     @Operation(
         summary = "재고 증가",
-        description = "여러 상품의 재고를 일괄 증가합니다. 결제 취소 등 처리 시 사용됩니다."
+        description = "여러 상품의 재고를 일괄 증가합니다. 결제 취소 등 처리 시 사용됩니다.",
+        security = { @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "User-Id"),
+                     @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "User-Roles") }
     )
     @ApiResponses({
         @ApiResponse(

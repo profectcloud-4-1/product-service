@@ -79,10 +79,10 @@ public class ProductExternalControllerTest {
         void registerProduct_Success() throws Exception {
             // given
             ProductRequestDto request = new ProductRequestDto(
-                    "신제품", UUID.randomUUID(), UUID.randomUUID(), "설명", 10000, 100, List.of(UUID.randomUUID())
+                    "신제품", UUID.randomUUID(), UUID.randomUUID(), "설명", 10000, 100, List.of(UUID.randomUUID()),  UUID.randomUUID()
             );
             UUID newProductId = UUID.randomUUID();
-            given(productService.createProduct(any(), any(), any(), anyInt(), anyInt(), any(), any())).willReturn(newProductId);
+            given(productService.createProduct(any(), any(), any(), anyInt(), anyInt(), any(), any(), any())).willReturn(newProductId);
 
             // when & then
             mockMvc.perform(post(BASE_URL + "/register")
@@ -99,7 +99,7 @@ public class ProductExternalControllerTest {
         void registerProduct_WithBlankName_Fails() throws Exception {
             // given
             ProductRequestDto request = new ProductRequestDto(
-                    "", UUID.randomUUID(), UUID.randomUUID(), "설명", 10000, 100, List.of(UUID.randomUUID())
+                    "", UUID.randomUUID(), UUID.randomUUID(), "설명", 10000, 100, List.of(UUID.randomUUID()), UUID.randomUUID()
             );
 
             // when & then
@@ -115,7 +115,7 @@ public class ProductExternalControllerTest {
         void registerProduct_WithNegativePrice_Fails() throws Exception {
             // given
             ProductRequestDto request = new ProductRequestDto(
-                    "신제품", UUID.randomUUID(), UUID.randomUUID(), "설명", -100, 100, List.of(UUID.randomUUID())
+                    "신제품", UUID.randomUUID(), UUID.randomUUID(), "설명", -100, 100, List.of(UUID.randomUUID()), UUID.randomUUID()
             );
 
             // when & then
@@ -131,7 +131,7 @@ public class ProductExternalControllerTest {
         void registerProduct_WithEmptyImageIds_Fails() throws Exception {
             // given
             ProductRequestDto request = new ProductRequestDto(
-                    "신제품", UUID.randomUUID(), UUID.randomUUID(), "설명", 10000, 100, Collections.emptyList()
+                    "신제품", UUID.randomUUID(), UUID.randomUUID(), "설명", 10000, 100, Collections.emptyList(), UUID.randomUUID()
             );
 
             // when & then
@@ -146,8 +146,8 @@ public class ProductExternalControllerTest {
         @DisplayName("실패 (예외) - Service 로직에서 예외가 발생하면, 해당 예외에 맞는 상태코드를 반환한다.")
         void registerProduct_ServiceThrowsException_Fails() throws Exception {
             // given
-            ProductRequestDto request = new ProductRequestDto("신제품", UUID.randomUUID(), UUID.randomUUID(), "설명", 10000, 100, List.of(UUID.randomUUID()));
-            given(productService.createProduct(any(), any(), any(), anyInt(), anyInt(), any(), any()))
+            ProductRequestDto request = new ProductRequestDto("신제품", UUID.randomUUID(), UUID.randomUUID(), "설명", 10000, 100, List.of(UUID.randomUUID()), UUID.randomUUID());
+            given(productService.createProduct(any(), any(), any(), anyInt(), anyInt(), any(), any(), any()))
                     .willThrow(new ProductHandler(ErrorStatus.CATEGORY_NOT_FOUND));
 
             // when & then
@@ -168,7 +168,7 @@ public class ProductExternalControllerTest {
         void getProduct_Success() throws Exception {
             // given
             UUID productId = UUID.randomUUID();
-            Product mockProduct = new Product(productId, UUID.randomUUID(), UUID.randomUUID(), "조회 제품", "설명", 10000, null, null, null, Collections.emptyList());
+            Product mockProduct = new Product(productId, UUID.randomUUID(), UUID.randomUUID(), "조회 제품", "설명", 10000, UUID.randomUUID(), null, null, null, Collections.emptyList());
             ProductResponseDto mockResponseDto = new ProductResponseDto("조회 제품", mockProduct.getBrandId(), mockProduct.getCategoryId(), "설명", 10000, Collections.emptyList());
 
             given(productService.getProduct(eq(productId))).willReturn(mockProduct);
@@ -212,12 +212,12 @@ public class ProductExternalControllerTest {
             // given
             UUID productId = UUID.randomUUID();
             UpdateProductRequestDto request = new UpdateProductRequestDto(
-                    "수정된 제품명", UUID.randomUUID(), UUID.randomUUID(), "수정 설명", 12000, List.of(UUID.randomUUID())
+                    "수정된 제품명", UUID.randomUUID(), UUID.randomUUID(), "수정 설명", 12000, List.of(UUID.randomUUID()), UUID.randomUUID()
             );
-            Product updatedProduct = new Product(productId, request.brandId(), request.categoryId(), request.name(), request.description(), request.price(), null, null, null, Collections.emptyList());
+            Product updatedProduct = new Product(productId, request.brandId(), request.categoryId(), request.name(), request.description(), request.price(), UUID.randomUUID(), null, null, null, Collections.emptyList());
             ProductResponseDto mockResponseDto = new ProductResponseDto(request.name(), request.brandId(), request.categoryId(), request.description(), request.price(), Collections.emptyList());
 
-            given(productService.updateProduct(eq(productId), any(), any(), any(), anyInt(), any(), any()))
+            given(productService.updateProduct(eq(productId), any(), any(), any(), anyInt(), any(), any(), any()))
                     .willReturn(updatedProduct);
 
             try (MockedStatic<ProductDtoMapper> mockedMapper = Mockito.mockStatic(ProductDtoMapper.class)) {
@@ -240,7 +240,7 @@ public class ProductExternalControllerTest {
             // given
             UUID productId = UUID.randomUUID();
             UpdateProductRequestDto request = new UpdateProductRequestDto(
-                    "", UUID.randomUUID(), UUID.randomUUID(), "설명", 10000, List.of(UUID.randomUUID())
+                    "", UUID.randomUUID(), UUID.randomUUID(), "설명", 10000, List.of(UUID.randomUUID()), UUID.randomUUID()
             );
 
             // when & then
@@ -257,9 +257,9 @@ public class ProductExternalControllerTest {
             // given
             UUID productId = UUID.randomUUID();
             UpdateProductRequestDto request = new UpdateProductRequestDto(
-                    "수정된 제품명", UUID.randomUUID(), UUID.randomUUID(), "수정 설명", 12000, List.of(UUID.randomUUID())
+                    "수정된 제품명", UUID.randomUUID(), UUID.randomUUID(), "수정 설명", 12000, List.of(UUID.randomUUID()), UUID.randomUUID()
             );
-            given(productService.updateProduct(eq(productId), any(), any(), any(), anyInt(), any(), any()))
+            given(productService.updateProduct(eq(productId), any(), any(), any(), anyInt(), any(), any(), any()))
                     .willThrow(new GeneralException(ErrorStatus.PRODUCT_NOT_FOUND));
 
             // when & then

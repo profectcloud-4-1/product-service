@@ -28,7 +28,7 @@ public class CategoryRepositoryTest {
     private CategoryRepository categoryRepository;
 
     private CategoryEntity createAndPersistCategory(UUID parentId, String name) {
-        CategoryEntity category = new CategoryEntity(parentId, name);
+        CategoryEntity category = new CategoryEntity(UUID.randomUUID(), parentId, name);
         return entityManager.persist(category);
     }
 
@@ -40,7 +40,7 @@ public class CategoryRepositoryTest {
         @DisplayName("성공 - 새로운 루트 카테고리를 저장한다.")
         void saveRootCategory_Success() {
             // given
-            CategoryEntity newCategory = new CategoryEntity(null, "테스트 카테고리");
+            CategoryEntity newCategory = new CategoryEntity(UUID.randomUUID(), null, "테스트 카테고리");
 
             // when
             CategoryEntity savedCategory = categoryRepository.save(newCategory);
@@ -60,7 +60,7 @@ public class CategoryRepositoryTest {
         void saveChildCategory_Success() {
             // given
             CategoryEntity parent = createAndPersistCategory(null, "부모 카테고리");
-            CategoryEntity newChild = new CategoryEntity(parent.getId(), "자식 카테고리");
+            CategoryEntity newChild = new CategoryEntity(UUID.randomUUID(), parent.getId(), "자식 카테고리");
 
             // when
             CategoryEntity savedChild = categoryRepository.save(newChild);

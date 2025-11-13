@@ -1,10 +1,7 @@
 package profect.group1.goormdotcom.product.infrastructure.client.StockService;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.common.config.FeignConfig;
@@ -15,7 +12,7 @@ import java.util.UUID;
 
 @FeignClient(
     name = "product-to-stock",
-    url = "${service.order.url}",
+    url = "${service.product.url}",
     fallback = StockClientFallback.class,
     configuration = FeignConfig.class
 )
@@ -30,5 +27,10 @@ public interface StockClient {
     public ApiResponse<StockResponseDto> updateStock(
         @PathVariable("productId") UUID productId,
         @RequestBody Integer stockQuantity
+    );
+
+    @GetMapping("/api/v1/stock/{productId}")
+    public ApiResponse<StockResponseDto> getStock(
+            @PathVariable("productId") UUID productId
     );
 }
