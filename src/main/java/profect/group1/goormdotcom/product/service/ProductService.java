@@ -42,7 +42,7 @@ public class ProductService {
 
     @Value("${aws.cloudfront.domain}")
     private String cloudfrontDomain;
-    @Value("${aws.cloudfront.defaultImage}")
+    @Value("${aws.cloudfront.default-image}")
     private String defaultImageObjectKey;
 
     public UUID createProduct(

@@ -35,6 +35,7 @@ aws:
     bucket: ${AWS_S3_BUCKET}
   cloudfront:
     domain: ${AWS_CLOUDFRONT_DOMAIN}
+    default-image: ${AWS_DEFAULT_IMAGE}
 
 springdoc:
   use-fqn: true
