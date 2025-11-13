@@ -20,6 +20,8 @@ public record UpdateProductRequestDto(
     @Positive(message = "가격은 양수여야 합니다.")
     int price,
     @NotNull @Size(min = 1, message = "상품 이미지는 1개 이상 필요합니다.") 
-    List<UUID> imageIds
+    List<UUID> imageIds,
+    @NotNull @Size(min=1, max=1, message = "메인 이미지는 1개 선택해주세요.")
+    UUID mainImageId
 ) {    
 }

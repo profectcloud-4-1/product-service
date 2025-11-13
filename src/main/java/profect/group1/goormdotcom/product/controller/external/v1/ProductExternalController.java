@@ -52,6 +52,7 @@ public class ProductExternalController implements ProductApiDocs {
             request.name(), 
             request.price(), 
             request.stockQuantity(),
+            request.mainImageId(),
             request.description(),
             request.imageIds()
         );
@@ -80,6 +81,7 @@ public class ProductExternalController implements ProductApiDocs {
             request.name(),
             request.price(),
             request.description(),
+            request.mainImageId(),
             request.imageIds()
         );
         
