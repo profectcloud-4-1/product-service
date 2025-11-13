@@ -34,6 +34,7 @@ public class ProductRepositoryTest {
                 UUID.randomUUID(),
                 name,
                 price,
+                UUID.randomUUID(),
                 "Test Description"
         );
     }
@@ -76,6 +77,7 @@ public class ProductRepositoryTest {
                     originalProduct.getCategoryId(),
                     "Updated Name",
                     15000,
+                    UUID.randomUUID(),
                     originalProduct.getDescription()
             );
             productRepository.save(updatedInfo);

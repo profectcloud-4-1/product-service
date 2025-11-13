@@ -14,6 +14,7 @@ import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.common.file.FileStorageManager;
 import profect.group1.goormdotcom.product.domain.Product;
 import profect.group1.goormdotcom.product.domain.ProductImage;
+import profect.group1.goormdotcom.product.domain.ProductSummary;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.StockClient;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockRequestDto;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockResponseDto;
@@ -67,7 +68,7 @@ public class ProductServiceTest {
     }
 
     private ProductEntity given_제품이_존재한다(UUID productId) {
-        ProductEntity productEntity = new ProductEntity(productId, UUID.randomUUID(), UUID.randomUUID(), "기존 제품", 100, "기존 설명");
+        ProductEntity productEntity = new ProductEntity(productId, UUID.randomUUID(), UUID.randomUUID(), "기존 제품", 100, UUID.randomUUID(), "기존 설명");
         when(productRepository.findById(productId)).thenReturn(Optional.of(productEntity));
         return productEntity;
     }
@@ -110,7 +111,7 @@ public class ProductServiceTest {
             List<UUID> imageIds = List.of(UUID.randomUUID(), UUID.randomUUID());
 
             // when
-            UUID productId = productService.createProduct(UUID.randomUUID(), UUID.randomUUID(), "신제품", 10000, 100, "설명", imageIds);
+            UUID productId = productService.createProduct(UUID.randomUUID(), UUID.randomUUID(), "신제품", 10000, 100, UUID.randomUUID(), "설명", imageIds);
 
             // then: 행동 검증
             assertThat(productId).isNotNull();
@@ -127,7 +128,7 @@ public class ProductServiceTest {
             given_재고_등록에_실패한다();
 
             // when & then
-            assertThatThrownBy(() -> productService.createProduct(UUID.randomUUID(), UUID.randomUUID(), "실패 제품", 100, 10, "설명", List.of()))
+            assertThatThrownBy(() -> productService.createProduct(UUID.randomUUID(), UUID.randomUUID(), "실패 제품", 100, 10, UUID.randomUUID(), "설명", List.of()))
                     .isInstanceOf(IllegalStateException.class);
 
             // then
@@ -148,7 +149,7 @@ public class ProductServiceTest {
             List<UUID> newImageIds = List.of(UUID.randomUUID());
 
             // when
-            productService.updateProduct(productId, UUID.randomUUID(), UUID.randomUUID(), "수정된 제품", 20000, "수정된 설명", newImageIds);
+            productService.updateProduct(productId, UUID.randomUUID(), UUID.randomUUID(), "수정된 제품", 20000, "수정된 설명", UUID.randomUUID(), newImageIds);
 
             // then
             verify(productRepository, times(1)).findById(productId);
@@ -165,7 +166,7 @@ public class ProductServiceTest {
             given_제품이_존재하지_않는다(productId);
 
             // when & then
-            assertThatThrownBy(() -> productService.updateProduct(productId, null, null, null, 0, null, null))
+            assertThatThrownBy(() -> productService.updateProduct(productId, null, null, null, 0, null, UUID.randomUUID(), null))
                     .isInstanceOf(IllegalArgumentException.class);
         }
     }
@@ -227,65 +228,160 @@ public class ProductServiceTest {
             assertThatThrownBy(() -> productService.getProduct(productId))
                     .isInstanceOf(IllegalArgumentException.class);
         }
-    }
 
-    @Nested
-    @DisplayName("제품 삭제 시나리오")
-    class DeleteProductTest {
+        @Nested
+        @DisplayName("제품 삭제 시나리오")
+        class DeleteProductTest {
 
-        @Test
-        @DisplayName("성공 - 제품과 연관된 이미지를 함께 삭제한다.")
-        void deleteProduct_Success() {
-            // given
-            UUID productId = UUID.randomUUID();
-            given_제품이_존재한다(productId);
-            List<ProductImageEntity> images = given_제품의_이미지가_존재한다(productId);
-            List<UUID> imageIds = images.stream().map(ProductImageEntity::getId).toList();
+            @Test
+            @DisplayName("성공 - 제품과 연관된 이미지를 함께 삭제한다.")
+            void deleteProduct_Success() {
+                // given
+                UUID productId = UUID.randomUUID();
+                given_제품이_존재한다(productId);
+                List<ProductImageEntity> images = given_제품의_이미지가_존재한다(productId);
+                List<UUID> imageIds = images.stream().map(ProductImageEntity::getId).toList();
 
-            // when
-            productService.deleteProduct(productId, UUID.randomUUID());
+                // when
+                productService.deleteProduct(productId, UUID.randomUUID());
 
-            // then
-            verify(productRepository, times(1)).deleteById(productId);
-            ArgumentCaptor<List<UUID>> captor = ArgumentCaptor.forClass(List.class);
-            verify(productImageRepository, times(1)).deleteAllById(captor.capture());
-            assertThat(captor.getValue()).isEqualTo(imageIds);
+                // then
+                verify(productRepository, times(1)).deleteById(productId);
+                ArgumentCaptor<List<UUID>> captor = ArgumentCaptor.forClass(List.class);
+                verify(productImageRepository, times(1)).deleteAllById(captor.capture());
+                assertThat(captor.getValue()).isEqualTo(imageIds);
+            }
+        }
+
+        @Nested
+        @DisplayName("다중 제품 삭제 시나리오")
+        class DeleteProductsTest {
+
+            @Test
+            @DisplayName("성공 - 주어진 ID 목록으로 제품들을 삭제한다.")
+            void deleteProducts_Success() {
+                // given
+                List<UUID> productIds = List.of(UUID.randomUUID(), UUID.randomUUID());
+
+                // when
+                productService.deleteProducts(productIds, UUID.randomUUID());
+
+                // then
+                verify(productRepository, times(1)).deleteAllById(productIds);
+            }
+        }
+
+        @Nested
+        @DisplayName("제품 이미지 삭제 시나리오")
+        class DeleteProductImageTest {
+
+            @Test
+            @DisplayName("성공 - 주어진 ID로 이미지를 삭제한다.")
+            void deleteProductImage_Success() {
+                // given
+                UUID imageId = UUID.randomUUID();
+
+                // when
+                productService.deleteProductImage(imageId);
+
+                // then
+                verify(productImageRepository, times(1)).deleteById(imageId);
+            }
         }
     }
 
     @Nested
-    @DisplayName("다중 제품 삭제 시나리오")
-    class DeleteProductsTest {
+    @DisplayName("카트용 제품 요약 조회 시나리오")
+    class GetCartProductsTest {
 
         @Test
-        @DisplayName("성공 - 주어진 ID 목록으로 제품들을 삭제한다.")
-        void deleteProducts_Success() {
+        @DisplayName("성공 - 존재하지 않는 제품 ID는 NOT_EXIST 상태로 반환한다.")
+        void getCartProducts_NotExist() {
             // given
-            List<UUID> productIds = List.of(UUID.randomUUID(), UUID.randomUUID());
+            UUID missingId = UUID.randomUUID();
+            when(productRepository.findByIdIncludingDeleted(missingId)).thenReturn(Optional.ofNullable(null));
 
             // when
-            productService.deleteProducts(productIds, UUID.randomUUID());
+            List<ProductSummary> summaries = productService.getCartProducts(List.of(missingId));
 
             // then
-            verify(productRepository, times(1)).deleteAllById(productIds);
+            assertThat(summaries).hasSize(1);
+            ProductSummary s = summaries.get(0);
+            assertThat(s.getId()).isEqualTo(null);
+            assertThat(s.getStatus().name()).isEqualTo("NOT_EXIST");
+            assertThat(s.getMainImage()).isNull();
+            verifyNoInteractions(stockClient);
         }
-    }
-
-    @Nested
-    @DisplayName("제품 이미지 삭제 시나리오")
-    class DeleteProductImageTest {
 
         @Test
-        @DisplayName("성공 - 주어진 ID로 이미지를 삭제한다.")
-        void deleteProductImage_Success() {
+        @DisplayName("성공 - 삭제된 제품은 NOT_EXIST 상태로 반환한다.")
+        void getCartProducts_Deleted_ReturnsNotExist() {
             // given
-            UUID imageId = UUID.randomUUID();
+            UUID pid = UUID.randomUUID();
+            ProductEntity deleted = new ProductEntity(pid, UUID.randomUUID(), UUID.randomUUID(), "삭제된 상품", 1000, UUID.randomUUID(), "desc");
+
+            ProductEntity spyDeleted = spy(deleted);
+            when(spyDeleted.getDeletedAt()).thenReturn(LocalDateTime.now());
+
+            when(productRepository.findByIdIncludingDeleted(pid)).thenReturn(Optional.of(spyDeleted));
 
             // when
-            productService.deleteProductImage(imageId);
+            List<ProductSummary> summaries = productService.getCartProducts(List.of(pid));
 
             // then
-            verify(productImageRepository, times(1)).deleteById(imageId);
+            assertThat(summaries).hasSize(1);
+            ProductSummary s = summaries.get(0);
+            assertThat(s.getId()).isEqualTo(pid);
+            assertThat(s.getStatus().name()).isEqualTo("NOT_EXIST");
+            verifyNoInteractions(stockClient);
+        }
+
+        @Test
+        @DisplayName("성공 - 재고 0이면 SOLD_OUT 상태로 반환한다.")
+        void getCartProducts_SoldOut() {
+            // given
+            UUID pid = UUID.randomUUID();
+            UUID mainImageId = UUID.randomUUID();
+            ProductEntity entity = new ProductEntity(pid, UUID.randomUUID(), UUID.randomUUID(), "품절 상품", 2000, mainImageId, "desc");
+            when(productRepository.findByIdIncludingDeleted(pid)).thenReturn(Optional.of(entity));
+
+            ProductImageEntity img = new ProductImageEntity(mainImageId, pid);
+            when(productImageRepository.findById(mainImageId)).thenReturn(Optional.of(img));
+            when(fileStorageManager.getObjectKey(mainImageId)).thenReturn("img.jpg");
+
+            StockResponseDto stock = new StockResponseDto(pid, 0, LocalDateTime.now());
+            when(stockClient.getStock(pid)).thenReturn(ApiResponse.onSuccess(stock));
+
+            // when
+            List<ProductSummary> summaries = productService.getCartProducts(List.of(pid));
+
+            // then
+            assertThat(summaries).hasSize(1);
+            ProductSummary s = summaries.get(0);
+            assertThat(s.getStatus().name()).isEqualTo("SOLD_OUT");
+            assertThat(s.getMainImage().getImageUrl()).isEqualTo("https://test-domain.com/img.jpg");
+        }
+
+        @Test
+        @DisplayName("성공 - 재고가 존재하면 AVAILABLE 상태로 반환한다.")
+        void getCartProducts_Available() {
+            // given
+            UUID pid = UUID.randomUUID();
+            ProductEntity entity = new ProductEntity(pid, UUID.randomUUID(), UUID.randomUUID(), "정상 상품", 3000, null, "desc");
+            when(productRepository.findByIdIncludingDeleted(pid)).thenReturn(Optional.of(entity));
+//            when(productImageRepository.findAllById(any())).thenReturn(List.of());
+
+            StockResponseDto stock = new StockResponseDto(pid, 10, LocalDateTime.now());
+            when(stockClient.getStock(pid)).thenReturn(ApiResponse.onSuccess(stock));
+
+            // when
+            List<ProductSummary> summaries = productService.getCartProducts(List.of(pid));
+
+            // then
+            assertThat(summaries).hasSize(1);
+            ProductSummary s = summaries.get(0);
+            assertThat(s.getStatus().name()).isEqualTo("AVAILABLE");
+            assertThat(s.getMainImage()).isNotNull();
         }
     }
 }
