@@ -22,7 +22,8 @@ import profect.group1.goormdotcom.product.controller.external.v1.dto.UpdateProdu
 @Tag(name = "상품", description = "상품 API")
 public interface ProductApiDocs {
 
-    @Operation(summary = "상품 등록", description = "SELLER 전용", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "상품 등록", description = "SELLER 전용",
+            security = { @SecurityRequirement(name = "User-Id"), @SecurityRequirement(name = "User-Roles") })
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "200",
         description = "성공",
@@ -40,7 +41,8 @@ public interface ProductApiDocs {
 
     
 
-    @Operation(summary = "상품 수정", description = "SELLER 전용", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "상품 수정", description = "SELLER 전용",
+            security = { @SecurityRequirement(name = "User-Id"), @SecurityRequirement(name = "User-Roles") })
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "200",
         description = "성공",
@@ -51,7 +53,8 @@ public interface ProductApiDocs {
         @RequestBody UpdateProductRequestDto request
     );
 
-    @Operation(summary = "상품 삭제", description = "SELLER 전용", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "상품 삭제", description = "SELLER 전용",
+            security = { @SecurityRequirement(name = "User-Id"), @SecurityRequirement(name = "User-Roles") })
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "200",
         description = "성공",
@@ -59,7 +62,8 @@ public interface ProductApiDocs {
     )
     ApiResponse<UUID> deleteProduct(@Parameter(description = "상품 ID") UUID productId, @RequestBody @Valid UUID brandId);
 
-    @Operation(summary = "상품 일괄 삭제", description = "SELLER 전용", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "상품 일괄 삭제", description = "SELLER 전용",
+            security = { @SecurityRequirement(name = "User-Id"), @SecurityRequirement(name = "User-Roles") })
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "200",
         description = "성공",

@@ -20,7 +20,9 @@ public interface StockApiDocs {
 
     @Operation(
         summary = "재고 등록",
-        description = "상품의 재고를 등록합니다. (SELLER 전용)"
+        description = "상품의 재고를 등록합니다. (SELLER 전용)",
+        security = { @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "User-Id"),
+                     @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "User-Roles") }
     )
     @ApiResponses({
         @ApiResponse(
@@ -68,7 +70,9 @@ public interface StockApiDocs {
 
     @Operation(
         summary = "재고 수정",
-        description = "특정 상품의 재고 수량을 수정합니다. (SELLER 전용)"
+        description = "특정 상품의 재고 수량을 수정합니다. (SELLER 전용)",
+        security = { @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "User-Id"),
+                     @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "User-Roles") }
     )
     @ApiResponses({
         @ApiResponse(
@@ -108,7 +112,9 @@ public interface StockApiDocs {
 
     @Operation(
         summary = "재고 조회",
-        description = "특정 상품의 재고 정보를 조회합니다. (SELLER 전용)"
+        description = "특정 상품의 재고 정보를 조회합니다. (SELLER 전용)",
+        security = { @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "User-Id"),
+                     @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "User-Roles") }
     )
     @ApiResponses({
         @ApiResponse(
@@ -146,7 +152,9 @@ public interface StockApiDocs {
 
     @Operation(
         summary = "재고 삭제",
-        description = "특정 상품의 재고 정보를 삭제합니다. (SELLER 전용)"
+        description = "특정 상품의 재고 정보를 삭제합니다. (SELLER 전용)",
+        security = { @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "User-Id"),
+                     @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "User-Roles") }
     )
     @ApiResponses({
         @ApiResponse(

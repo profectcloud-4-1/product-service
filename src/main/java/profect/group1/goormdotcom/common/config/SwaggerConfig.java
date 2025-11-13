@@ -13,15 +13,31 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI openAPI() {
-        SecurityScheme securityScheme = new SecurityScheme()
-                .type(SecurityScheme.Type.HTTP)
-                .scheme("bearer")
-                .bearerFormat("JWT");
-        SecurityRequirement securityRequirement = new SecurityRequirement().addList("bearerAuth");
+        // Custom headers as API keys in header
+        SecurityScheme userIdHeader = new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.HEADER)
+                .name("User-Id")
+                .description("User ID header for internal calls");
+
+        SecurityScheme userRolesHeader = new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.HEADER)
+                .name("User-Roles")
+                .description("Comma-separated user roles header");
+
+        Components components = new Components()
+                .addSecuritySchemes("User-Id", userIdHeader)
+                .addSecuritySchemes("User-Roles", userRolesHeader);
+
+        // Make headers show up in Swagger UI's Authorize dialog globally
+        SecurityRequirement headersRequirement = new SecurityRequirement()
+                .addList("User-Id")
+                .addList("User-Roles");
 
         return new OpenAPI()
-                .components(new Components().addSecuritySchemes("bearerAuth", securityScheme))
-                .addSecurityItem(securityRequirement)
+                .components(components)
+                .addSecurityItem(headersRequirement)
                 .info(apiInfo());
     }
 
@@ -32,4 +48,3 @@ public class SwaggerConfig {
                 .version("1.0.0");
     }
 }
-
