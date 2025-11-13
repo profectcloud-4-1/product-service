@@ -69,7 +69,7 @@ public class ProductServiceTest {
     }
 
     private ProductEntity given_제품이_존재한다(UUID productId) {
-        ProductEntity productEntity = new ProductEntity(productId, UUID.randomUUID(), UUID.randomUUID(), "기존 제품", 100, UUID.randomUUID(), "기존 설명");
+        ProductEntity productEntity = new ProductEntity(productId, UUID.randomUUID(), UUID.randomUUID(), "기존 제품", 100, UUID.randomUUID(), "기존 설명", "기존 이미지경로");
         when(productRepository.findById(productId)).thenReturn(Optional.of(productEntity));
         return productEntity;
     }
@@ -319,7 +319,7 @@ public class ProductServiceTest {
         void getCartProducts_Deleted_ReturnsNotExist() {
             // given
             UUID pid = UUID.randomUUID();
-            ProductEntity deleted = new ProductEntity(pid, UUID.randomUUID(), UUID.randomUUID(), "삭제된 상품", 1000, UUID.randomUUID(), "desc");
+            ProductEntity deleted = new ProductEntity(pid, UUID.randomUUID(), UUID.randomUUID(), "삭제된 상품", 1000, UUID.randomUUID(), "desc", "img.jpg");
 
             ProductEntity spyDeleted = spy(deleted);
             when(spyDeleted.getDeletedAt()).thenReturn(LocalDateTime.now());
@@ -343,7 +343,7 @@ public class ProductServiceTest {
             // given
             UUID pid = UUID.randomUUID();
             UUID mainImageId = UUID.randomUUID();
-            ProductEntity entity = new ProductEntity(pid, UUID.randomUUID(), UUID.randomUUID(), "품절 상품", 2000, mainImageId, "desc");
+            ProductEntity entity = new ProductEntity(pid, UUID.randomUUID(), UUID.randomUUID(), "품절 상품", 2000, mainImageId, "desc", "img.jpg");
             when(productRepository.findByIdIncludingDeleted(pid)).thenReturn(Optional.of(entity));
 
             ProductImageEntity img = new ProductImageEntity(mainImageId, pid);
@@ -368,7 +368,7 @@ public class ProductServiceTest {
         void getCartProducts_Available() {
             // given
             UUID pid = UUID.randomUUID();
-            ProductEntity entity = new ProductEntity(pid, UUID.randomUUID(), UUID.randomUUID(), "정상 상품", 3000, null, "desc");
+            ProductEntity entity = new ProductEntity(pid, UUID.randomUUID(), UUID.randomUUID(), "정상 상품", 3000, null, "desc", "img.jpg");
             when(productRepository.findByIdIncludingDeleted(pid)).thenReturn(Optional.of(entity));
 //            when(productImageRepository.findAllById(any())).thenReturn(List.of());
 
