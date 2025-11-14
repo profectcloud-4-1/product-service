@@ -18,16 +18,6 @@ spring:
             connectTimeout: 5000
             readTimeout: 5000
 
-aws:
-  s3:
-    access-key: ${AWS_S3_ACCESS_KEY}
-    secret-key: ${AWS_S3_SECRET_KEY}
-    region: ${AWS_S3_REGION}
-    bucket: ${AWS_S3_BUCKET}
-  cloudfront:
-    domain: ${AWS_CLOUDFRONT_DOMAIN}
-    default-image: ${AWS_DEFAULT_IMAGE}
-
 springdoc:
   use-fqn: true
 
@@ -42,12 +32,18 @@ service:
   payment:
     url: ${PAYMENT_SERVICE_URL}
 
+aws:
+  s3:
+    access-key: ${AWS_S3_ACCESS_KEY}
+    secret-key: ${AWS_S3_SECRET_KEY}
+    region: ${AWS_S3_REGION}
+    bucket: ${AWS_S3_BUCKET}
+  cloudfront:
+    domain: ${AWS_CLOUDFRONT_DOMAIN}
+    default-image: ${AWS_DEFAULT_IMAGE}
+
 stock:
   adjust:
     retry:
       base-off-ms: ${BASE_OFF_MS}
       max-retries: ${MAX_RETRIES}
-
-logging:
-  level:
-    root: INFO
