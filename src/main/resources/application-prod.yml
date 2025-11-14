@@ -26,4 +26,4 @@ management:
       cloudwatch2:
         enabled: true
         namespace: goorm-ecs-app
-        step: 10s
+        step: ${CLOUDWATCH_STEP:1m}
