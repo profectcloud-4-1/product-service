@@ -2,7 +2,6 @@ spring:
   config:
     activate:
       on-profile: dev
-  import: optional:file:.env[.properties]
   jpa:
     hibernate:
       ddl-auto: update
