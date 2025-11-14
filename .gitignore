@@ -45,3 +45,6 @@ out/
 config/application-*.yml
 
 .DS_Store
+
+### logs
+logs/
