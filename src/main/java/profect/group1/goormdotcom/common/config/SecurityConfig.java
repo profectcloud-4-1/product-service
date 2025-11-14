@@ -36,12 +36,6 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").permitAll()
                         // 스웨거 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**", "/api-docs", "/swagger-ui.html", "/h2-console/**").permitAll()
-                        // 회원가입, 로그인 허용
-                        .requestMatchers("/api/v1/users/register").permitAll()
-                        .requestMatchers("/api/v1/users/login").permitAll()
-                        .requestMatchers("/api/v1/payments/toss/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/orders/*/payment/success").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/orders/*/payment/fail").permitAll()
                         // 내부api 허용
                         .requestMatchers("/internal/**").permitAll()
                         .anyRequest().authenticated()

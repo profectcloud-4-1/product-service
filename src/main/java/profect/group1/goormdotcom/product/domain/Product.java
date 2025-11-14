@@ -25,5 +25,4 @@ public class Product {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
     private List<ProductImage> images = new ArrayList<>();
-    
 }

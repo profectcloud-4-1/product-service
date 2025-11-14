@@ -2,10 +2,13 @@ package profect.group1.goormdotcom.product.repository.mapper;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import profect.group1.goormdotcom.product.domain.Product;
 import profect.group1.goormdotcom.product.domain.ProductImage;
 import profect.group1.goormdotcom.product.repository.entity.ProductEntity;
 import profect.group1.goormdotcom.product.repository.entity.ProductImageEntity;
+import profect.group1.goormdotcom.product.domain.ProductListItem;
 
 public class ProductMapper {
     
@@ -38,6 +41,15 @@ public class ProductMapper {
             entity.getUpdatedAt(), 
             entity.getDeletedAt(), 
             images
+        );
+    }
+
+    public static ProductListItem toProductListItem(ProductEntity entity, String imageUrlPrefix) {
+        return new ProductListItem(
+            entity.getId(),
+            entity.getName(),
+            entity.getPrice(),
+            imageUrlPrefix + "/" + entity.getMainImageUri()
         );
     }
 }

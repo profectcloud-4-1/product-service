@@ -10,8 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import profect.group1.goormdotcom.product.repository.entity.ProductEntity;
+
 
 public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
 
@@ -20,4 +20,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
 
     @Query(value = "select * from p_product where id in (:ids)", nativeQuery = true)
     List<ProductEntity> findAllByIdIncludingDeleted(@Param("ids") Collection<UUID> ids);
+
+    Page<ProductEntity> findByNameContainingIgnoreCase(String keyword, Pageable pageable);
 }

@@ -12,3 +12,12 @@ spring:
       hibernate:
         default_batch_fetch_size: 200
         format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: never

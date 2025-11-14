@@ -19,6 +19,7 @@ import profect.group1.goormdotcom.product.controller.external.v1.dto.ProductResp
 import profect.group1.goormdotcom.product.controller.external.v1.dto.UpdateProductRequestDto;
 import profect.group1.goormdotcom.product.controller.external.v1.mapper.ProductDtoMapper;
 import profect.group1.goormdotcom.product.domain.Product;
+import profect.group1.goormdotcom.product.domain.ProductListItem;
 import profect.group1.goormdotcom.product.service.ProductService;
 
 import java.util.List;
@@ -31,6 +32,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
+import profect.group1.goormdotcom.common.dto.PaginationRequestDto;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 
 @RestController
@@ -59,6 +62,16 @@ public class ProductExternalController implements ProductApiDocs {
         
         return ApiResponse.of(SuccessStatus._OK, productId);
     }
+
+    @GetMapping
+    public ApiResponse<List<ProductListItem>> getProducts(
+        @ModelAttribute PaginationRequestDto request
+    ) {
+        System.out.println(request);
+        List<ProductListItem> products = productService.getProducts(request.getPage(), request.getSize(), request.getSort(), request.getOrder(), request.getKeyword());
+        return ApiResponse.onSuccess(products);
+    }
+
     
     @GetMapping("/{productId}")
     public ApiResponse<ProductResponseDto> getProduct(
