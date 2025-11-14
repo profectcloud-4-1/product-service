@@ -176,6 +176,13 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
 
     /* ========= 핸들러 ========= */
 
+    /** IllegalArgumentException 핸들러 */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException e, WebRequest request) {
+        BaseErrorCode errorCode = ErrorStatus._BAD_REQUEST;
+        return handleExceptionInternalFalse(e, errorCode, HttpHeaders.EMPTY, HttpStatus.BAD_REQUEST, request, e.getMessage());
+    }
+
     /** 도메인 공통 예외 */
     @ExceptionHandler(GeneralException.class)
     public ResponseEntity<Object> handleGeneral(GeneralException ex, HttpServletRequest request) {
