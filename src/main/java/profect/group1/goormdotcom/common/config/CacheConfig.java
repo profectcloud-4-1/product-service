@@ -22,11 +22,6 @@ import java.util.Map;
 public class CacheConfig {
 
     @Bean
-    RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory();
-    }
-
-    @Bean
     public RedisCacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
 
         // key는 문자열
