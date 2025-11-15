@@ -82,6 +82,9 @@ dependencies {
 	// feign client
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
+    // spring-data-redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
