@@ -39,10 +39,12 @@ public class FileStorageManager {
     @Transactional
     public PresignedUrlResponse generateUploadUrl(String filename, FileDomain domain, String contentType) {
         String extension = extractExtension(filename);
-        String uniqueFilename = UUID.randomUUID().toString() + extension;
+        UUID uuid = UUID.randomUUID();
+        String uniqueFilename = uuid.toString() + extension;
         String objectKey = String.format("temp/%s/%s", domain.getPath(), uniqueFilename);
 
         FileUpload fileUpload = FileUpload.builder()
+                .id(uuid)
                 .objectKey(objectKey)
                 .domain(domain)
                 .status(FileStatus.TEMP)
