@@ -1,4 +1,12 @@
 package profect.group1.goormdotcom.product.domain.param;
 
-public class ProductSummaryUpdateRequest {
+import lombok.Builder;
+
+@Builder
+public record ProductSummaryUpdateRequest(
+        String name,
+        int price,
+        String mainImageUrl,
+        String status
+) {
 }

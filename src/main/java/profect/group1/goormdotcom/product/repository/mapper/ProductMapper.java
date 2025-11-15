@@ -49,7 +49,7 @@ public class ProductMapper {
             entity.getId(),
             entity.getName(),
             entity.getPrice(),
-            imageUrlPrefix + "/" + entity.getMainImageUri()
+            imageUrlPrefix + "/" + entity.getMainImageUrl()
         );
     }
 }

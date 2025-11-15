@@ -1,12 +1,12 @@
 package profect.group1.goormdotcom.product.repository.entity;
 
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.redis.core.RedisHash;
-import profect.group1.goormdotcom.product.domain.ProductImage;
-import profect.group1.goormdotcom.product.domain.ProductStatus;
 
 import java.util.UUID;
 
@@ -14,10 +14,11 @@ import java.util.UUID;
 @RedisHash("productSummary")
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductSummary {
+@Builder
+public class ProductSummaryEntity {
 
     @Id
-    private String id;
+    private UUID id;
     private String name;
     private int price;
     private String mainImageUrl;

@@ -80,7 +80,7 @@ public class ProductRepositoryTest {
                     15000,
                     UUID.randomUUID(),
                     originalProduct.getDescription(),
-                    originalProduct.getMainImageUri()
+                    originalProduct.getMainImageUrl()
             );
             productRepository.save(updatedInfo);
             entityManager.flush();
@@ -90,7 +90,7 @@ public class ProductRepositoryTest {
             ProductEntity foundAfterUpdate = entityManager.find(ProductEntity.class, originalProduct.getId());
             assertThat(foundAfterUpdate.getName()).isEqualTo("Updated Name");
             assertThat(foundAfterUpdate.getPrice()).isEqualTo(15000);
-            assertThat(foundAfterUpdate.getMainImageUri()).isEqualTo(originalProduct.getMainImageUri());
+            assertThat(foundAfterUpdate.getMainImageUrl()).isEqualTo(originalProduct.getMainImageUrl());
         }
     }
 

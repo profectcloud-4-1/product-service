@@ -12,8 +12,8 @@ public class CartProductDtoMapper {
                 product.getId(),
                 product.getName(),
                 product.getPrice(),
-                product.getMainImage().getImageUrl(),
-                product.getStatus().getValue()
+                product.getMainImageUrl(),
+                product.getStatus()
         );
     }
 }

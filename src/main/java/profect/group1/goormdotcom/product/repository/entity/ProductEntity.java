@@ -47,7 +47,7 @@ public class ProductEntity extends BaseEntity{
     @Column(name = "main_image_id")
     private UUID mainImageId;
     @Column(name = "main_image_uri")
-    private String mainImageUri;
+    private String mainImageUrl;
     
     @CreatedDate
     @Column(name = "created_at")
@@ -64,7 +64,7 @@ public class ProductEntity extends BaseEntity{
         final int price,
         final UUID mainImageId,
         final String description,
-        final String mainImageUri
+        final String mainImageUrl
     ) {
         this.id = id;
         this.brandId = brandId;
@@ -73,6 +73,6 @@ public class ProductEntity extends BaseEntity{
         this.price = price;
         this.mainImageId = mainImageId;
         this.description = description;
-        this.mainImageUri = mainImageUri;
+        this.mainImageUrl = mainImageUrl;
     }
 }
