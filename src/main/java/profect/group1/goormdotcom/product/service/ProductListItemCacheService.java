@@ -35,7 +35,7 @@ public class ProductListItemCacheService {
     private final ImageUrlGenerator imageUrlGenerator;
 
     @Cacheable(cacheNames = "productSummary", key="#productId")
-    public ProductListItem getCartProductSummary(
+    public ProductListItem getCartProductListItem(
             UUID productId
     ) {
         ProductListItem productListItem;

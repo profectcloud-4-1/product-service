@@ -13,6 +13,7 @@ import profect.group1.goormdotcom.common.file.FileStorageManager;
 import profect.group1.goormdotcom.product.domain.Product;
 import profect.group1.goormdotcom.product.domain.ProductImage;
 import profect.group1.goormdotcom.product.domain.ProductListItem;
+import profect.group1.goormdotcom.product.domain.ProductStatus;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.StockClient;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockRequestDto;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockResponseDto;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import profect.group1.goormdotcom.product.service.utils.ImageUrlGenerator;
 
 @Slf4j
 @Service
@@ -39,10 +41,7 @@ public class ProductService {
     private final StockClient stockClient;
     private final FileStorageManager fileStorageManager;
 
-    @Value("${aws.cloudfront.domain}")
-    private String cloudfrontDomain;
-    @Value("${aws.cloudfront.default-image}")
-    private String defaultImageObjectKey;
+    private final ImageUrlGenerator imageUrlGenerator;
 
     public UUID createProduct(
         final UUID brandId,
@@ -56,8 +55,6 @@ public class ProductService {
     ) {
         final UUID productId = UUID.randomUUID();
 
-        String mainImageUri = fileStorageManager.getObjectKey(mainImageId);
-        
         ProductEntity productEntity = new ProductEntity(
             productId, 
             brandId, 
@@ -65,8 +62,7 @@ public class ProductService {
             productName, 
             price,
             mainImageId,
-            description,
-            mainImageUri
+            description
         );
         
         // 재고 등록 요청
@@ -108,9 +104,8 @@ public class ProductService {
         //     throw new IllegalStateException("Product is not owned by your brand.");
         // }
 
-        String mainImageUri = fileStorageManager.getObjectKey(mainImageId);
         ProductEntity newProductEntity = new ProductEntity(
-            productId, productEntity.getBrandId(), categoryId, productName, price, mainImageId, description, mainImageUri
+            productId, productEntity.getBrandId(), categoryId, productName, price, mainImageId, description
         );
 
         // 새롭게 업로드 된 이미지 저장. (삭제된 이미지는 프론트엔드에서 delete요청 보내서 soft delete 처리, 새롭게 업로드 된 메타정보 저장.)
@@ -160,59 +155,20 @@ public class ProductService {
         
     }
 
-    public List<ProductListItem> getProducts(
-        final int page,
-        final int size,
-        final String sort,
-        final String order,
-        final String keyword
-    ) {
-        // 정렬
-        Sort.Direction direction =
-                (order != null && order.equalsIgnoreCase("asc"))
-                        ? Sort.Direction.ASC
-                        : Sort.Direction.DESC;
-        int zeroBasedPage = Math.max(page - 1, 0);
-        Pageable pageable = PageRequest.of(zeroBasedPage, size, Sort.by(direction, sort));
-
-        Page<ProductEntity> resultPage;
-
-        // keyword가 없는 경우 전체 조회
-        if (keyword == null || keyword.isBlank()) {
-            resultPage = productRepository.findAll(pageable);
-        } else {
-            // keyword가 있는 경우 LIKE 검색
-            resultPage = productRepository.findByNameContainingIgnoreCase(keyword, pageable);
-        }
-
-        return resultPage.getContent().stream().map((entity) -> ProductMapper.toProductListItem(entity, cloudfrontDomain)).toList();
-    }
-
     public Product getProduct(
         final UUID productId
     ) {
         ProductEntity productEntity = productRepository.findById(productId)
             .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        Map<ProductImageEntity, String> urlMapping = new HashMap<ProductImageEntity, String>();
         List<ProductImageEntity> imageEntities = productImageRepository.findByProductId(productId);
-        String baseUrl = cloudfrontDomain.endsWith("/") ? cloudfrontDomain: cloudfrontDomain + '/';
-        // TODO: presigned server에서 여러 이미지의 object key를 한번에 조회할 수 있는 api가 필요할 듯
-        for (ProductImageEntity imageEntity: imageEntities) {
-            String objectKey;
-            try {
-                objectKey = fileStorageManager.getObjectKey(imageEntity.getId());
-            } catch (IllegalArgumentException | IllegalStateException e) {
-                // TODO: 이미지가 없을 경우 어떻게 처리?
-                // 기본 이미지가 있어야 할 것 같다. (goorm 이미지?)
-                objectKey = defaultImageObjectKey;
-            }
 
-            urlMapping.put(imageEntity,  baseUrl + objectKey);
+        // TODO: presigned server에서 여러 이미지의 object key를 한번에 조회할 수 있는 api가 필요할 듯
+        List<ProductImage> images = new ArrayList<>();
+        for (ProductImageEntity imageEntity: imageEntities) {
+            images.add(ProductImageMapper.toDomainWithImage(
+                    imageEntity, imageUrlGenerator.generateProductImageUrl(imageEntity.getId())));
         }
-        
-        List<ProductImage> images = urlMapping.keySet().stream()
-            .map((imageEntity) -> ProductImageMapper.toDomainWithImage(imageEntity, urlMapping.get(imageEntity))).toList();
 
         return ProductMapper.toDomainWithImage(productEntity, images);
     }

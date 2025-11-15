@@ -15,8 +15,7 @@ public class ProductImageMapper {
         return new ProductImage(
             entity.getId(),
             entity.getProductId(),
-            imageUrl,
-            entity.getDeletedAt()
+            imageUrl
         );
     }
 }
