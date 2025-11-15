@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import profect.group1.goormdotcom.product.domain.Product;
 import profect.group1.goormdotcom.product.domain.ProductImage;
+import profect.group1.goormdotcom.product.domain.ProductStatus;
 import profect.group1.goormdotcom.product.repository.entity.ProductEntity;
 import profect.group1.goormdotcom.product.repository.entity.ProductImageEntity;
 import profect.group1.goormdotcom.product.domain.ProductListItem;
@@ -44,12 +45,13 @@ public class ProductMapper {
         );
     }
 
-    public static ProductListItem toProductListItem(ProductEntity entity, String imageUrlPrefix) {
+    public static ProductListItem toProductListItem(ProductEntity entity, String mainImageUrl, ProductStatus status) {
         return new ProductListItem(
             entity.getId(),
             entity.getName(),
             entity.getPrice(),
-            imageUrlPrefix + "/" + entity.getMainImageUrl()
+            mainImageUrl,
+            status.getValue()
         );
     }
 }

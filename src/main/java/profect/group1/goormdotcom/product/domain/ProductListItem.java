@@ -14,4 +14,5 @@ public class ProductListItem {
     private String name;
     private int price;
     private String mainImageUrl;
+    private String status;
 }
