@@ -1,24 +1,19 @@
 package profect.group1.goormdotcom.product.service;
 
-import java.net.MalformedURLException;
 import java.util.*;
-import java.net.URL;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.common.file.FileStorageManager;
-import profect.group1.goormdotcom.common.file.dto.ObjectKeyResponse;
 import profect.group1.goormdotcom.product.domain.Product;
 import profect.group1.goormdotcom.product.domain.ProductImage;
 import profect.group1.goormdotcom.product.domain.ProductListItem;
 import profect.group1.goormdotcom.product.domain.ProductStatus;
-import profect.group1.goormdotcom.product.domain.ProductSummary;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.StockClient;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockRequestDto;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockResponseDto;
@@ -32,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import profect.group1.goormdotcom.product.service.utils.ImageUrlGenerator;
 
 @Slf4j
 @Service
@@ -45,10 +41,7 @@ public class ProductService {
     private final StockClient stockClient;
     private final FileStorageManager fileStorageManager;
 
-    @Value("${aws.cloudfront.domain}")
-    private String cloudfrontDomain;
-    @Value("${aws.cloudfront.default-image}")
-    private String defaultImageObjectKey;
+    private final ImageUrlGenerator imageUrlGenerator;
 
     public UUID createProduct(
         final UUID brandId,
@@ -62,8 +55,6 @@ public class ProductService {
     ) {
         final UUID productId = UUID.randomUUID();
 
-        String mainImageUri = fileStorageManager.getObjectKey(mainImageId);
-        
         ProductEntity productEntity = new ProductEntity(
             productId, 
             brandId, 
@@ -71,8 +62,7 @@ public class ProductService {
             productName, 
             price,
             mainImageId,
-            description,
-            mainImageUri
+            description
         );
         
         // 재고 등록 요청
@@ -114,9 +104,8 @@ public class ProductService {
         //     throw new IllegalStateException("Product is not owned by your brand.");
         // }
 
-        String mainImageUri = fileStorageManager.getObjectKey(mainImageId);
         ProductEntity newProductEntity = new ProductEntity(
-            productId, productEntity.getBrandId(), categoryId, productName, price, mainImageId, description, mainImageUri
+            productId, productEntity.getBrandId(), categoryId, productName, price, mainImageId, description
         );
 
         // 새롭게 업로드 된 이미지 저장. (삭제된 이미지는 프론트엔드에서 delete요청 보내서 soft delete 처리, 새롭게 업로드 된 메타정보 저장.)
@@ -166,139 +155,22 @@ public class ProductService {
         
     }
 
-    public List<ProductListItem> getProducts(
-        final int page,
-        final int size,
-        final String sort,
-        final String order,
-        final String keyword
-    ) {
-        // 정렬
-        Sort.Direction direction =
-                (order != null && order.equalsIgnoreCase("asc"))
-                        ? Sort.Direction.ASC
-                        : Sort.Direction.DESC;
-        int zeroBasedPage = Math.max(page - 1, 0);
-        Pageable pageable = PageRequest.of(zeroBasedPage, size, Sort.by(direction, sort));
-
-        Page<ProductEntity> resultPage;
-
-        // keyword가 없는 경우 전체 조회
-        if (keyword == null || keyword.isBlank()) {
-            resultPage = productRepository.findAll(pageable);
-        } else {
-            // keyword가 있는 경우 LIKE 검색
-            resultPage = productRepository.findByNameContainingIgnoreCase(keyword, pageable);
-        }
-
-        return resultPage.getContent().stream().map((entity) -> ProductMapper.toProductListItem(entity, cloudfrontDomain)).toList();
-    }
-
     public Product getProduct(
         final UUID productId
     ) {
         ProductEntity productEntity = productRepository.findById(productId)
             .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        Map<ProductImageEntity, String> urlMapping = new HashMap<ProductImageEntity, String>();
         List<ProductImageEntity> imageEntities = productImageRepository.findByProductId(productId);
-        String baseUrl = cloudfrontDomain.endsWith("/") ? cloudfrontDomain: cloudfrontDomain + '/';
-        // TODO: presigned server에서 여러 이미지의 object key를 한번에 조회할 수 있는 api가 필요할 듯
-        for (ProductImageEntity imageEntity: imageEntities) {
-            String objectKey;
-            try {
-                objectKey = fileStorageManager.getObjectKey(imageEntity.getId());
-            } catch (IllegalArgumentException | IllegalStateException e) {
-                // TODO: 이미지가 없을 경우 어떻게 처리?
-                // 기본 이미지가 있어야 할 것 같다. (goorm 이미지?)
-                objectKey = defaultImageObjectKey;
-            }
 
-            urlMapping.put(imageEntity,  baseUrl + objectKey);
+        // TODO: presigned server에서 여러 이미지의 object key를 한번에 조회할 수 있는 api가 필요할 듯
+        List<ProductImage> images = new ArrayList<>();
+        for (ProductImageEntity imageEntity: imageEntities) {
+            images.add(ProductImageMapper.toDomainWithImage(
+                    imageEntity, imageUrlGenerator.generateProductImageUrl(imageEntity.getId())));
         }
-        
-        List<ProductImage> images = urlMapping.keySet().stream()
-            .map((imageEntity) -> ProductImageMapper.toDomainWithImage(imageEntity, urlMapping.get(imageEntity))).toList();
 
         return ProductMapper.toDomainWithImage(productEntity, images);
-    }
-
-
-    public List<ProductSummary> getCartProducts(
-            final List<UUID> productIds
-    ) {
-        List<ProductSummary> products = new ArrayList<ProductSummary>();
-        ProductSummary notExistsProduct;
-        for (UUID productId: productIds) {
-            // 1. 상품 존재 여부 파악 -> 없으면 name에 존재하지 않는 상품 표시 보내기
-            Optional<ProductEntity> productEntity = productRepository.findByIdIncludingDeleted(productId);
-            String baseUrl = cloudfrontDomain.endsWith("/") ? cloudfrontDomain: cloudfrontDomain + '/';
-            String imageUrl;
-            if (productEntity.isPresent()) {
-                ProductEntity entity = productEntity.get();
-
-                // 2. 메인 이미지 존재 여부 파악
-                Optional<ProductImageEntity> imageEntity = productImageRepository.findById(entity.getMainImageId());
-                ProductImageEntity mainImageEntity = imageEntity.orElse(null);
-
-                // 첫번째 이미지를 카트 화면에서 띄울 메인 이미지로 선택
-                String objectKey = "";
-                ProductImage mainImage;
-                ProductSummary productSummary;
-
-                if (mainImageEntity != null) {
-                    try {
-                        objectKey = fileStorageManager.getObjectKey(mainImageEntity.getId());
-                    } catch (IllegalArgumentException | IllegalStateException e) {
-                        // TODO: 이미지가 없을 경우 어떻게 처리?
-                        // 기본 이미지가 있어야 할 것 같다. (goorm 이미지?)
-                        objectKey = "";
-                    }
-
-                    imageUrl = baseUrl + objectKey;
-                    mainImage = ProductImageMapper.toDomainWithImage(mainImageEntity, imageUrl);
-                } else {
-                    // 이미지를 못 찾은 경우 기본 이미지 제공
-                    imageUrl = baseUrl + defaultImageObjectKey;
-                    mainImage = new ProductImage(entity.getMainImageId(), entity.getBrandId(), imageUrl);
-                }
-
-                // 3. 삭제 여부 확인
-                if (entity.getDeletedAt() != null) {
-                    productSummary = new ProductSummary(
-                            productId, entity.getName(), entity.getPrice(), entity.getMainImageId(), mainImage, ProductStatus.NOT_EXIST
-                    );
-                } else {
-                    // 3. 재고 존재 여부 파악
-                    ApiResponse<StockResponseDto> response = stockClient.getStock(productId);
-                    if (response.getResult() == null) {
-                        // 재고 값을 못받아오면 존재 하지 않는 상품으로 봄
-                        productSummary = new ProductSummary(
-                                productId, entity.getName(), entity.getPrice(), entity.getMainImageId(), mainImage, ProductStatus.NOT_EXIST
-                        );
-                    } else if (response.getResult().stockQuantity() <= 0) {
-                        // 재고값이 0 이하인 경우 매진
-                        productSummary = new ProductSummary(
-                                productId, entity.getName(), entity.getPrice(), entity.getMainImageId(), mainImage, ProductStatus.SOLD_OUT
-                        );
-                    } else {
-                        productSummary = new ProductSummary(
-                                productId, entity.getName(), entity.getPrice(), entity.getMainImageId(), mainImage, ProductStatus.AVAILABLE
-                        );
-                    }
-                }
-                products.add(productSummary);
-            } else {
-                imageUrl = baseUrl + defaultImageObjectKey;
-                notExistsProduct = new ProductSummary(
-                    null,null, 0, null, new ProductImage(null, null, imageUrl), ProductStatus.NOT_EXIST
-                );
-                products.add(notExistsProduct);
-            }
-
-        }
-
-        return products;
     }
 
     public void deleteProductImage(final UUID imageId) {

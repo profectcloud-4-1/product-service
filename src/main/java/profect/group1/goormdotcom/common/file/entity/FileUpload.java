@@ -28,7 +28,6 @@ import java.util.UUID;
 @SQLRestriction("deleted_at IS NULL")
 public class FileUpload extends BaseEntity {
     @Id
-    @UuidGenerator
     private UUID id;
 
     @Column(nullable = false, length = 500)

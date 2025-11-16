@@ -20,6 +20,7 @@ import profect.group1.goormdotcom.product.controller.external.v1.dto.UpdateProdu
 import profect.group1.goormdotcom.product.controller.external.v1.mapper.ProductDtoMapper;
 import profect.group1.goormdotcom.product.domain.Product;
 import profect.group1.goormdotcom.product.domain.ProductListItem;
+import profect.group1.goormdotcom.product.service.ProductListItemService;
 import profect.group1.goormdotcom.product.service.ProductService;
 
 import java.util.List;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class ProductExternalController implements ProductApiDocs {
     private final ProductService productService;
     private final FileStorageManager fileStorageManager;
+    private final ProductListItemService productListItemService;
 
     @PostMapping("/register")
     @PreAuthorize("hasRole('MASTER')")
@@ -67,8 +69,8 @@ public class ProductExternalController implements ProductApiDocs {
     public ApiResponse<List<ProductListItem>> getProducts(
         @ModelAttribute PaginationRequestDto request
     ) {
-        System.out.println(request);
-        List<ProductListItem> products = productService.getProducts(request.getPage(), request.getSize(), request.getSort(), request.getOrder(), request.getKeyword());
+        List<ProductListItem> products = productListItemService.getProducts(
+                request.getPage(), request.getSize(), request.getSort(), request.getOrder(), request.getKeyword());
         return ApiResponse.onSuccess(products);
     }
 
