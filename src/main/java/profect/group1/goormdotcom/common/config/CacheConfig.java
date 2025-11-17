@@ -43,12 +43,11 @@ public class CacheConfig implements CachingConfigurer {
                 RedisCacheConfiguration.defaultCacheConfig()
                         .serializeKeysWith(keySerializer)
                         .serializeValuesWith(valueSerializer)
-                        .entryTtl(Duration.ofSeconds(60))   // 기본 TTL
+                        .entryTtl(Duration.ofSeconds(60))
                         .disableCachingNullValues();
 
-        // productSummary 캐시 설정 추가
         Map<String, RedisCacheConfiguration> cacheConfigs = new HashMap<>();
-        cacheConfigs.put("productSummary",
+        cacheConfigs.put("product-list-item:cart",
                 defaultConfig.entryTtl(Duration.ofSeconds(60)));
 
         return RedisCacheManager.builder(connectionFactory)
@@ -64,26 +63,23 @@ public class CacheConfig implements CachingConfigurer {
             public void handleCacheGetError(
                     RuntimeException exception, Cache cache, Object key
             ) {
-                log.warn("[CACHE][GET] 실패 – cache={}, key={}, msg={}",
+                log.warn("CACHE GET 실패 – cache={}, key={}, msg={}",
                         cacheName(cache), key, exception.getMessage());
-                // ❗ 예외를 다시 던지지 않는다
-                // → @Cacheable 메서드 본문(DB/stock 로직) 실행됨
             }
 
             @Override
             public void handleCachePutError(
                     RuntimeException exception, Cache cache, Object key, Object value
             ) {
-                log.warn("[CACHE][PUT] 실패 – cache={}, key={}, msg={}",
+                log.warn("CACHE PUT 실패 – cache={}, key={}, msg={}",
                         cacheName(cache), key, exception.getMessage());
-                // 캐시에 못 넣어도 요청 자체는 성공해야 하니까 그냥 무시
             }
 
             @Override
             public void handleCacheEvictError(
                     RuntimeException exception, Cache cache, Object key
             ) {
-                log.warn("[CACHE][EVICT] 실패 – cache={}, key={}, msg={}",
+                log.warn("CACHE EVICT 실패 – cache={}, key={}, msg={}",
                         cacheName(cache), key, exception.getMessage());
             }
 
@@ -91,7 +87,7 @@ public class CacheConfig implements CachingConfigurer {
             public void handleCacheClearError(
                     RuntimeException exception, Cache cache
             ) {
-                log.warn("[CACHE][CLEAR] 실패 – cache={}, msg={}",
+                log.warn("CACHE CLEAR 실패 – cache={}, msg={}",
                         cacheName(cache), exception.getMessage());
             }
 
