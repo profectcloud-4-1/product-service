@@ -56,3 +56,17 @@ stock:
       base-off-ms: ${BASE_OFF_MS}
       max-retries: ${MAX_RETRIES}
 
+
+resilience4j:
+  ratelimiter:
+    instances:
+      productOrigin:
+        limitForPeriod: ${PRODUCT_ORIGIN_LIMIT_FOR_PERIOD}
+        limitRefreshPeriod: ${PRODUCT_ORIGIN_LIMIT_REFRESH_PERIOD}
+        timeoutDuration: ${PRODUCT_ORIGIN_TIMEOUT_DURATION}
+
+  bulkhead:
+    instances:
+      productOrigin:
+        maxConcurrentCalls: ${PRODUCT_ORIGIN_MAX_CONCURRENT_CALLS}
+        maxWaitDuration: ${PRODUCT_ORIGIN_MAX_WAIT_DURATION}
