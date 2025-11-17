@@ -23,6 +23,8 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
       database: ${REDIS_DATABASE}
+      timeout: ${REDIS_COMMAND_TIMEOUT} # redis-server 호출 했을 때 대기 시간
+      connect-timeout: ${REDIS_CONNECT_TIMEOUT} # redis-server 연결시 대기 시간
 
 springdoc:
   use-fqn: true

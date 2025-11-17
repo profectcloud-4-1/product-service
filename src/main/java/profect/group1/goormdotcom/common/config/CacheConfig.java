@@ -1,6 +1,10 @@
 package profect.group1.goormdotcom.common.config;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -14,9 +18,10 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Configuration
 @EnableCaching
-public class CacheConfig {
+public class CacheConfig implements CachingConfigurer {
 
     @Bean
     public RedisCacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
@@ -50,6 +55,50 @@ public class CacheConfig {
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(cacheConfigs)
                 .build();
+    }
+
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return new CacheErrorHandler() {
+            @Override
+            public void handleCacheGetError(
+                    RuntimeException exception, Cache cache, Object key
+            ) {
+                log.warn("[CACHE][GET] 실패 – cache={}, key={}, msg={}",
+                        cacheName(cache), key, exception.getMessage());
+                // ❗ 예외를 다시 던지지 않는다
+                // → @Cacheable 메서드 본문(DB/stock 로직) 실행됨
+            }
+
+            @Override
+            public void handleCachePutError(
+                    RuntimeException exception, Cache cache, Object key, Object value
+            ) {
+                log.warn("[CACHE][PUT] 실패 – cache={}, key={}, msg={}",
+                        cacheName(cache), key, exception.getMessage());
+                // 캐시에 못 넣어도 요청 자체는 성공해야 하니까 그냥 무시
+            }
+
+            @Override
+            public void handleCacheEvictError(
+                    RuntimeException exception, Cache cache, Object key
+            ) {
+                log.warn("[CACHE][EVICT] 실패 – cache={}, key={}, msg={}",
+                        cacheName(cache), key, exception.getMessage());
+            }
+
+            @Override
+            public void handleCacheClearError(
+                    RuntimeException exception, Cache cache
+            ) {
+                log.warn("[CACHE][CLEAR] 실패 – cache={}, msg={}",
+                        cacheName(cache), exception.getMessage());
+            }
+
+            private String cacheName(Cache cache) {
+                return cache != null ? cache.getName() : "unknown";
+            }
+        };
     }
 }
 
