@@ -1,7 +1,7 @@
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: prod
   jpa:
     hibernate:
       ddl-auto: update
@@ -16,7 +16,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, prometheus
+        include: health, info, prometheus
   endpoint:
     health:
       show-details: never

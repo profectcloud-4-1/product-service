@@ -76,11 +76,14 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-	// Micrometer -> CloudWatch 측정 데이터 전송
-	implementation 'io.micrometer:micrometer-registry-cloudwatch2'
+	// Micrometer -> Prometheus 측정 데이터 전송
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	// feign client
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // spring-data-redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0'
 	compileOnly 'org.projectlombok:lombok'
@@ -101,7 +104,7 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
 
     //aws s3
-    implementation platform('software.amazon.awssdk:bom:2.25.40')
+    implementation platform('software.amazon.awssdk:bom:2.31.36')
     implementation 'software.amazon.awssdk:s3'
 
     //JSON 직/역직렬화

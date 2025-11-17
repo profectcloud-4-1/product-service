@@ -33,7 +33,7 @@ spring:
       domain: https://dummy.cloudfront.net
 
 server:
-  port: 0
+  port: 8080
 
 service:
   product:

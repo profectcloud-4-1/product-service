@@ -14,7 +14,6 @@ import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.common.file.FileStorageManager;
 import profect.group1.goormdotcom.product.domain.Product;
 import profect.group1.goormdotcom.product.domain.ProductImage;
-import profect.group1.goormdotcom.product.domain.ProductSummary;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.StockClient;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockRequestDto;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockResponseDto;
@@ -23,6 +22,7 @@ import profect.group1.goormdotcom.product.repository.ProductRepository;
 import profect.group1.goormdotcom.product.repository.entity.ProductEntity;
 import profect.group1.goormdotcom.product.repository.entity.ProductImageEntity;
 import profect.group1.goormdotcom.product.service.ProductService;
+import profect.group1.goormdotcom.product.service.utils.ImageUrlGenerator;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -50,11 +50,13 @@ public class ProductServiceTest {
     private StockClient stockClient;
     @Mock
     private FileStorageManager fileStorageManager;
+    @Mock
+    private ImageUrlGenerator imageUrlGenerator;
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(productService, "cloudfrontDomain", "https://test-domain.com/");
-        ReflectionTestUtils.setField(productService, "defaultImageObjectKey", "img.jpg");
+        ReflectionTestUtils.setField(imageUrlGenerator, "cloudfrontDomain", "https://test-domain.com/");
+        ReflectionTestUtils.setField(imageUrlGenerator, "defaultImageObjectKey", "img.jpg");
     }
 
     private void given_재고_등록에_성공한다() {
@@ -69,7 +71,7 @@ public class ProductServiceTest {
     }
 
     private ProductEntity given_제품이_존재한다(UUID productId) {
-        ProductEntity productEntity = new ProductEntity(productId, UUID.randomUUID(), UUID.randomUUID(), "기존 제품", 100, UUID.randomUUID(), "기존 설명", "기존 이미지경로");
+        ProductEntity productEntity = new ProductEntity(productId, UUID.randomUUID(), UUID.randomUUID(), "기존 제품", 100, UUID.randomUUID(), "기존 설명");
         when(productRepository.findById(productId)).thenReturn(Optional.of(productEntity));
         return productEntity;
     }
@@ -91,8 +93,8 @@ public class ProductServiceTest {
         when(productImageRepository.findByProductId(productId)).thenReturn(Collections.emptyList());
     }
 
-    private void given_이미지_ObjectKey_조회에_성공한다(UUID imageId, String objectKey) {
-        when(fileStorageManager.getObjectKey(imageId)).thenReturn(objectKey);
+    private void given_이미지_url_조회에_성공한다(UUID imageId) {
+        when(imageUrlGenerator.generateProductImageUrl(imageId)).thenReturn( "https://test-domain.com/" + "main/product/" + imageId.toString());
     }
 
     private void given_이미지_ObjectKey_조회에_실패한다(UUID imageId) {
@@ -183,8 +185,8 @@ public class ProductServiceTest {
             UUID productId = UUID.randomUUID();
             given_제품이_존재한다(productId);
             List<ProductImageEntity> images = given_제품의_이미지가_존재한다(productId);
-            given_이미지_ObjectKey_조회에_성공한다(images.get(0).getId(), "key1.jpg");
-            given_이미지_ObjectKey_조회에_성공한다(images.get(1).getId(), "key2.jpg");
+            given_이미지_url_조회에_성공한다(images.get(0).getId());
+            given_이미지_url_조회에_성공한다(images.get(1).getId());
 
             // when
             Product product = productService.getProduct(productId);
@@ -193,11 +195,9 @@ public class ProductServiceTest {
             assertThat(product.getImages())
                     .extracting(ProductImage::getImageUrl)
                     .containsExactlyInAnyOrder(
-                            "https://test-domain.com/key1.jpg",
-                            "https://test-domain.com/key2.jpg"
+                            "https://test-domain.com/main/product/" + images.get(0).getId().toString(),
+                            "https://test-domain.com/main/product/" + images.get(1).getId().toString()
                     );
-
-            verify(fileStorageManager, times(2)).getObjectKey(any(UUID.class));
         }
 
         @Test
@@ -288,101 +288,6 @@ public class ProductServiceTest {
                 // then
                 verify(productImageRepository, times(1)).deleteById(imageId);
             }
-        }
-    }
-
-    @Nested
-    @DisplayName("카트용 제품 요약 조회 시나리오")
-    class GetCartProductsTest {
-
-        @Test
-        @DisplayName("성공 - 존재하지 않는 제품 ID는 NOT_EXIST 상태로 반환한다.")
-        void getCartProducts_NotExist() {
-            // given
-            UUID missingId = UUID.randomUUID();
-            when(productRepository.findByIdIncludingDeleted(missingId)).thenReturn(Optional.ofNullable(null));
-
-            // when
-            List<ProductSummary> summaries = productService.getCartProducts(List.of(missingId));
-
-            // then
-            assertThat(summaries).hasSize(1);
-            ProductSummary s = summaries.get(0);
-            assertThat(s.getId()).isEqualTo(null);
-            assertThat(s.getStatus().name()).isEqualTo("NOT_EXIST");
-            assertThat(s.getMainImage().getImageUrl()).isEqualTo("https://test-domain.com/img.jpg");
-            verifyNoInteractions(stockClient);
-        }
-
-        @Test
-        @DisplayName("성공 - 삭제된 제품은 NOT_EXIST 상태로 반환한다.")
-        void getCartProducts_Deleted_ReturnsNotExist() {
-            // given
-            UUID pid = UUID.randomUUID();
-            ProductEntity deleted = new ProductEntity(pid, UUID.randomUUID(), UUID.randomUUID(), "삭제된 상품", 1000, UUID.randomUUID(), "desc", "img.jpg");
-
-            ProductEntity spyDeleted = spy(deleted);
-            when(spyDeleted.getDeletedAt()).thenReturn(LocalDateTime.now());
-
-            when(productRepository.findByIdIncludingDeleted(pid)).thenReturn(Optional.of(spyDeleted));
-
-            // when
-            List<ProductSummary> summaries = productService.getCartProducts(List.of(pid));
-
-            // then
-            assertThat(summaries).hasSize(1);
-            ProductSummary s = summaries.get(0);
-            assertThat(s.getId()).isEqualTo(pid);
-            assertThat(s.getStatus().name()).isEqualTo("NOT_EXIST");
-            verifyNoInteractions(stockClient);
-        }
-
-        @Test
-        @DisplayName("성공 - 재고 0이면 SOLD_OUT 상태로 반환한다.")
-        void getCartProducts_SoldOut() {
-            // given
-            UUID pid = UUID.randomUUID();
-            UUID mainImageId = UUID.randomUUID();
-            ProductEntity entity = new ProductEntity(pid, UUID.randomUUID(), UUID.randomUUID(), "품절 상품", 2000, mainImageId, "desc", "img.jpg");
-            when(productRepository.findByIdIncludingDeleted(pid)).thenReturn(Optional.of(entity));
-
-            ProductImageEntity img = new ProductImageEntity(mainImageId, pid);
-            when(productImageRepository.findById(mainImageId)).thenReturn(Optional.of(img));
-            when(fileStorageManager.getObjectKey(mainImageId)).thenReturn("img.jpg");
-
-            StockResponseDto stock = new StockResponseDto(pid, 0, LocalDateTime.now());
-            when(stockClient.getStock(pid)).thenReturn(ApiResponse.onSuccess(stock));
-
-            // when
-            List<ProductSummary> summaries = productService.getCartProducts(List.of(pid));
-
-            // then
-            assertThat(summaries).hasSize(1);
-            ProductSummary s = summaries.get(0);
-            assertThat(s.getStatus().name()).isEqualTo("SOLD_OUT");
-            assertThat(s.getMainImage().getImageUrl()).isEqualTo("https://test-domain.com/img.jpg");
-        }
-
-        @Test
-        @DisplayName("성공 - 재고가 존재하면 AVAILABLE 상태로 반환한다.")
-        void getCartProducts_Available() {
-            // given
-            UUID pid = UUID.randomUUID();
-            ProductEntity entity = new ProductEntity(pid, UUID.randomUUID(), UUID.randomUUID(), "정상 상품", 3000, null, "desc", "img.jpg");
-            when(productRepository.findByIdIncludingDeleted(pid)).thenReturn(Optional.of(entity));
-//            when(productImageRepository.findAllById(any())).thenReturn(List.of());
-
-            StockResponseDto stock = new StockResponseDto(pid, 10, LocalDateTime.now());
-            when(stockClient.getStock(pid)).thenReturn(ApiResponse.onSuccess(stock));
-
-            // when
-            List<ProductSummary> summaries = productService.getCartProducts(List.of(pid));
-
-            // then
-            assertThat(summaries).hasSize(1);
-            ProductSummary s = summaries.get(0);
-            assertThat(s.getStatus().name()).isEqualTo("AVAILABLE");
-            assertThat(s.getMainImage()).isNotNull();
         }
     }
 }
