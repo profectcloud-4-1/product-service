@@ -35,9 +35,11 @@ public class ProductListItemCacheService {
     private final ImageUrlGenerator imageUrlGenerator;
 
     @Cacheable(cacheNames = "productSummary", key="#productId")
-    public ProductListItem getCartProductListItem(
-            UUID productId
-    ) {
+    public ProductListItem getCartProductListItem(UUID productId) { // 캐시 조회 로직
+        return getCartProductListItemFromOrigin(productId);
+    }
+
+    public ProductListItem getCartProductListItemFromOrigin(UUID productId) { // DB 조회 로직
         ProductListItem productListItem;
 
         // 1. 상품 존재 여부 파악 -> 없으면 name에 존재하지 않는 상품 표시 보내기
