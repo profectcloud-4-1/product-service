@@ -21,7 +21,8 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
-      ssl: ${REDIS_SSL}
+      ssl: 
+        enabled: ${REDIS_SSL_ENABLED}
       password: ${REDIS_PASSWORD}
       database: ${REDIS_DATABASE}
       timeout: ${REDIS_COMMAND_TIMEOUT} # redis-server 호출 했을 때 대기 시간
