@@ -24,6 +24,8 @@ import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.common.apiPayload.code.BaseErrorCode;
 import profect.group1.goormdotcom.common.apiPayload.code.ErrorReasonDTO;
 import profect.group1.goormdotcom.common.apiPayload.code.status.ErrorStatus;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import io.github.resilience4j.bulkhead.BulkheadFullException;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -319,5 +321,25 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
                 e, errorCode, HttpHeaders.EMPTY, errorCode.getReasonHttpStatus().getHttpStatus(),
                 request, e.getMessage()
         );
+    }
+
+    /** Resilience4j RateLimiter 초과 -> 503 Service Unavailable */
+    @ExceptionHandler(RequestNotPermitted.class)
+    public ResponseEntity<Object> handleRateLimited(RequestNotPermitted e, WebRequest request) {
+        String code = "COMMON503";
+        String message = "서비스가 혼잡합니다. 잠시 후 다시 시도해주세요.";
+        log5xx("RateLimiterExceeded", request, message, e);
+        ApiResponse<Object> body = ApiResponse.onFailure(code, message, null);
+        return super.handleExceptionInternal(e, body, HttpHeaders.EMPTY, HttpStatus.SERVICE_UNAVAILABLE, request);
+    }
+
+    /** Resilience4j Bulkhead 초과 -> 503 Service Unavailable */
+    @ExceptionHandler(BulkheadFullException.class)
+    public ResponseEntity<Object> handleBulkheadFull(BulkheadFullException e, WebRequest request) {
+        String code = "COMMON503";
+        String message = "서비스가 혼잡합니다. 잠시 후 다시 시도해주세요.";
+        log5xx("BulkheadFull", request, message, e);
+        ApiResponse<Object> body = ApiResponse.onFailure(code, message, null);
+        return super.handleExceptionInternal(e, body, HttpHeaders.EMPTY, HttpStatus.SERVICE_UNAVAILABLE, request);
     }
 }

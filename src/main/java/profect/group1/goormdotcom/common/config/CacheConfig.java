@@ -1,14 +1,15 @@
 package profect.group1.goormdotcom.common.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -17,9 +18,10 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Configuration
 @EnableCaching
-public class CacheConfig {
+public class CacheConfig implements CachingConfigurer {
 
     @Bean
     public RedisCacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
@@ -41,18 +43,58 @@ public class CacheConfig {
                 RedisCacheConfiguration.defaultCacheConfig()
                         .serializeKeysWith(keySerializer)
                         .serializeValuesWith(valueSerializer)
-                        .entryTtl(Duration.ofSeconds(60))   // 기본 TTL
+                        .entryTtl(Duration.ofSeconds(60))
                         .disableCachingNullValues();
 
-        // productSummary 캐시 설정 추가
         Map<String, RedisCacheConfiguration> cacheConfigs = new HashMap<>();
-        cacheConfigs.put("productSummary",
+        cacheConfigs.put("product-list-item:cart",
                 defaultConfig.entryTtl(Duration.ofSeconds(60)));
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(cacheConfigs)
                 .build();
+    }
+
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return new CacheErrorHandler() {
+            @Override
+            public void handleCacheGetError(
+                    RuntimeException exception, Cache cache, Object key
+            ) {
+                log.warn("CACHE GET 실패 – cache={}, key={}, msg={}",
+                        cacheName(cache), key, exception.getMessage());
+            }
+
+            @Override
+            public void handleCachePutError(
+                    RuntimeException exception, Cache cache, Object key, Object value
+            ) {
+                log.warn("CACHE PUT 실패 – cache={}, key={}, msg={}",
+                        cacheName(cache), key, exception.getMessage());
+            }
+
+            @Override
+            public void handleCacheEvictError(
+                    RuntimeException exception, Cache cache, Object key
+            ) {
+                log.warn("CACHE EVICT 실패 – cache={}, key={}, msg={}",
+                        cacheName(cache), key, exception.getMessage());
+            }
+
+            @Override
+            public void handleCacheClearError(
+                    RuntimeException exception, Cache cache
+            ) {
+                log.warn("CACHE CLEAR 실패 – cache={}, msg={}",
+                        cacheName(cache), exception.getMessage());
+            }
+
+            private String cacheName(Cache cache) {
+                return cache != null ? cache.getName() : "unknown";
+            }
+        };
     }
 }
 

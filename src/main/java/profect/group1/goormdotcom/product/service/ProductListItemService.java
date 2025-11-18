@@ -64,11 +64,10 @@ public class ProductListItemService {
     ) {
         List<ProductListItem> productListItems = new ArrayList<>();
         for (UUID productId: productIds) {
-            // 모든 product 단건 조회
+            // product 단건 조회
             ProductListItem productListItem = productSummaryCacheService.getCartProductListItem(productId);
             productListItems.add(productListItem);
         }
         return productListItems;
     }
-
 }

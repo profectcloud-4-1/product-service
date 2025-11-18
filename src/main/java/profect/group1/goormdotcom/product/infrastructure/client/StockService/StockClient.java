@@ -29,7 +29,7 @@ public interface StockClient {
         @RequestBody Integer stockQuantity
     );
 
-    @GetMapping("/api/v1/stock/{productId}")
+    @GetMapping("/internal/v1/stock/{productId}")
     public ApiResponse<StockResponseDto> getStock(
             @PathVariable("productId") UUID productId
     );
