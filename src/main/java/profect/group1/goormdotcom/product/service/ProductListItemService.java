@@ -60,21 +60,11 @@ public class ProductListItemService {
                 entity, imageUrlGenerator.generateProductImageUrl(entity.getMainImageId()), ProductStatus.AVAILABLE)).toList();
     }
 
-    public List<ProductListItem> getCartProducts(
-            final List<UUID> productIds
-    ) {
-        List<ProductListItem> productListItems = new ArrayList<>();
-        for (UUID productId: productIds) {
-            // product 단건 조회
-            ProductListItem productListItem = productListItemCacheService.getCartProductListItem(productId);
-            productListItems.add(productListItem);
-        }
-        return productListItems;
+    public List<ProductListItem> getCartProducts(final List<UUID> productIds) {
+        return productListItemCacheService.getCartProductListItemsBulk(productIds);
     }
 
-    public List<ProductListItem> getCartProductsFromOrigin(
-            final List<UUID> productIds
-    ) {
+    public List<ProductListItem> getCartProductsFromOrigin(final List<UUID> productIds) {
         return productListItemOriginService.getCartProductListItemsBulkFromOrigin(productIds);
     }
 }

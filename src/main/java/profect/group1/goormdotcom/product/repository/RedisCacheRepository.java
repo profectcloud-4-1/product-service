@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,13 @@ public class RedisCacheRepository {
                 .toList();
 
         // MGET 실행
-        List<String> values = redisTemplate.opsForValue().multiGet(keys);
+        List<String> values;
+        try {
+            values = redisTemplate.opsForValue().multiGet(keys);
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis connection failure", e.getCause());
+            return List.of();
+        }
 
         if (values == null || values.isEmpty()) {
             return List.of();
@@ -67,7 +74,7 @@ public class RedisCacheRepository {
                 cachingMap.put(cacheKey, cacheValue);
             } catch (JsonProcessingException e) {
                  log.warn("Failed to serialize ProductListItemEntity. id={}", entity.getId(), e);
-                 }
+            }
         }
 
         if (cachingMap.isEmpty()) {
@@ -75,19 +82,23 @@ public class RedisCacheRepository {
         }
 
         // MSET 실행
-        redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
-            var keySerializer = redisTemplate.getStringSerializer();
-            var valueSerializer = redisTemplate.getStringSerializer();
+        try {
+            redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+                var keySerializer = redisTemplate.getStringSerializer();
+                var valueSerializer = redisTemplate.getStringSerializer();
 
-            cachingMap.forEach((key, json) -> {
-                byte[] k = keySerializer.serialize(key);
-                byte[] v = valueSerializer.serialize(json);
-                if (k != null && v != null) {
-                    connection.stringCommands()
-                            .setEx(k, ttl.getSeconds(), v);
-                }
+                cachingMap.forEach((key, json) -> {
+                    byte[] k = keySerializer.serialize(key);
+                    byte[] v = valueSerializer.serialize(json);
+                    if (k != null && v != null) {
+                        connection.stringCommands()
+                                .setEx(k, ttl.getSeconds(), v);
+                    }
+                });
+                return null;
             });
-            return null;
-        });
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis connection failure", e.getCause());
+        }
     }
 }

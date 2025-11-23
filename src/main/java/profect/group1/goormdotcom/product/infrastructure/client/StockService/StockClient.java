@@ -1,5 +1,6 @@
 package profect.group1.goormdotcom.product.infrastructure.client.StockService;
 
+import jakarta.websocket.server.PathParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,6 @@ public interface StockClient {
 
     @GetMapping("/internal/v1/stock")
     public ApiResponse<List<StockResponseDto>> getStocksBulk(
-            @PathVariable("product-ids") List<UUID> productIds
+            @RequestParam("product-ids") List<UUID> productIds
     );
 }

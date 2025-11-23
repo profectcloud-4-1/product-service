@@ -98,6 +98,7 @@ public class ProductListItemOriginService {
 
         // 재고 조회
         ApiResponse<List<StockResponseDto>> response = stockClient.getStocksBulk(productIds);
+
         if (response.getResult() == null) {
             for (UUID productId : productIds) {
                 // 엔터티
