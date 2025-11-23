@@ -9,6 +9,7 @@ import profect.group1.goormdotcom.common.apiPayload.code.status.ErrorStatus;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockRequestDto;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockResponseDto;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -27,6 +28,11 @@ public class StockClientFallback implements StockClient{
 
     @Override
     public ApiResponse<StockResponseDto> getStock(UUID productId) {
+        return ApiResponse.onFailure(ErrorStatus._INTERNAL_SERVER_ERROR.getCode(), ErrorStatus._INTERNAL_SERVER_ERROR.getMessage(), null);
+    }
+
+    @Override
+    public ApiResponse<List<StockResponseDto>> getStocksBulk(List<UUID> productIds) {
         return ApiResponse.onFailure(ErrorStatus._INTERNAL_SERVER_ERROR.getCode(), ErrorStatus._INTERNAL_SERVER_ERROR.getMessage(), null);
     }
 }

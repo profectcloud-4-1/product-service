@@ -19,11 +19,7 @@ import profect.group1.goormdotcom.stock.service.StockService;
 import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.common.apiPayload.code.status.SuccessStatus;
 
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/internal/v1/stock")
@@ -37,9 +33,17 @@ public class StockInternalController implements StockInternalApiDocs {
     public ApiResponse<StockResponseDto> getStock(
             @PathVariable(value = "productId") UUID productId
     ) {
-
         Stock stock = stockService.getStock(productId);
         return ApiResponse.of(SuccessStatus._OK, StockDtoMapper.toStockResponseDto(stock));
+    }
+
+    @GetMapping()
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<List<StockResponseDto>> getStocksBulk(
+            @RequestParam(value = "product-ids") List<UUID> productIds
+    ) {
+        List<Stock> stocks = stockService.getStocksBulk(productIds);
+        return ApiResponse.of(SuccessStatus._OK, stocks.stream().map(StockDtoMapper::toStockResponseDto).toList());
     }
 
     @PostMapping("/decrease")

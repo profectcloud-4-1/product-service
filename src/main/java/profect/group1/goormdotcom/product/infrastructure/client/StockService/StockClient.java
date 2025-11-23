@@ -8,6 +8,7 @@ import profect.group1.goormdotcom.common.config.FeignConfig;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockRequestDto;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockResponseDto;
 
+import java.util.List;
 import java.util.UUID;
 
 @FeignClient(
@@ -32,5 +33,10 @@ public interface StockClient {
     @GetMapping("/internal/v1/stock/{productId}")
     public ApiResponse<StockResponseDto> getStock(
             @PathVariable("productId") UUID productId
+    );
+
+    @GetMapping("/internal/v1/stock")
+    public ApiResponse<List<StockResponseDto>> getStocksBulk(
+            @PathVariable("product-ids") List<UUID> productIds
     );
 }

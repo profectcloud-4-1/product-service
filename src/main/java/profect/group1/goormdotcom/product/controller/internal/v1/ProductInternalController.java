@@ -20,16 +20,25 @@ import java.util.UUID;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductInternalController implements ProductInternalApiDocs {
     private final ProductService productService;
-    private final ProductListItemService productSummaryService;
+    private final ProductListItemService productListItemService;
 
     @GetMapping("/cart")
     public ApiResponse<List<CartProductResponseDto>> getCartProducts(
             @RequestParam(value = "product-ids") List<UUID> productIds
     ) {
-
-        // 다른 브랜치에 실험용으로 빼기
         List<ProductListItem> products;
-        products = productSummaryService.getCartProducts(productIds);
+        products = productListItemService.getCartProducts(productIds);
+
+        return ApiResponse.onSuccess(products.stream().map(CartProductDtoMapper::toProductResponseDto).toList());
+    }
+
+
+    @GetMapping("/cart/nocache")
+    public ApiResponse<List<CartProductResponseDto>> getCartProductsFromOrigin(
+            @RequestParam(value = "product-ids") List<UUID> productIds
+    ) {
+        List<ProductListItem> products;
+        products = productListItemService.getCartProductsFromOrigin(productIds);
 
         return ApiResponse.onSuccess(products.stream().map(CartProductDtoMapper::toProductResponseDto).toList());
     }

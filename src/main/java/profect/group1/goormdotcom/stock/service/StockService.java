@@ -1,5 +1,6 @@
 package profect.group1.goormdotcom.stock.service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,6 +60,13 @@ public class StockService {
     public Stock getStock(UUID productId) {
         StockEntity entity = getStockEntity(productId);
         return StockMapper.toDomain(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Stock> getStocksBulk(List<UUID> productIds) {
+        List<StockEntity> stockEntities = stockRepository.findAllByProductIdIn(productIds);
+
+        return stockEntities.stream().map(StockMapper::toDomain).toList();
     }
 
     @Transactional

@@ -25,7 +25,8 @@ public class ProductListItemService {
 
     private final ProductRepository productRepository;
     private final ImageUrlGenerator imageUrlGenerator;
-    private final ProductListItemCacheService productSummaryCacheService;
+    private final ProductListItemCacheService productListItemCacheService;
+    private final ProductListItemOriginService productListItemOriginService;
 
     public List<ProductListItem> getProducts(
             final int page,
@@ -65,9 +66,15 @@ public class ProductListItemService {
         List<ProductListItem> productListItems = new ArrayList<>();
         for (UUID productId: productIds) {
             // product 단건 조회
-            ProductListItem productListItem = productSummaryCacheService.getCartProductListItem(productId);
+            ProductListItem productListItem = productListItemCacheService.getCartProductListItem(productId);
             productListItems.add(productListItem);
         }
         return productListItems;
+    }
+
+    public List<ProductListItem> getCartProductsFromOrigin(
+            final List<UUID> productIds
+    ) {
+        return productListItemOriginService.getCartProductListItemsBulkFromOrigin(productIds);
     }
 }
