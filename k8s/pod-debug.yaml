@@ -1,0 +1,19 @@
+# Debug용
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: product-debug
+  namespace: goormdotcom-local
+spec:
+  restartPolicy: Never
+  containers:
+    - name: product-debug
+      image: product:25112403
+      command: ["sh"]
+      args: ["-c", "sleep infinity"]
+      envFrom:
+        - configMapRef:
+            name: product-service-config
+        - secretRef:
+            name: product-service-secret
