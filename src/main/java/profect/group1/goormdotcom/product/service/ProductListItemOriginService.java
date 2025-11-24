@@ -115,11 +115,17 @@ public class ProductListItemOriginService {
                 // 이미지
                 String imageUrl = imageUrlGenerator.generateProductImageUrl(productEntity.getMainImageId());
 
-                if (stockResponseDto.stockQuantity() > 0) {
-                    productListItemMap.put(stockResponseDto.productId(), ProductMapper.toProductListItem(productEntity, imageUrl, ProductStatus.AVAILABLE));
+                if (productEntity.getDeletedAt() == null) {
+                    if (stockResponseDto.stockQuantity() > 0) {
+                        productListItemMap.put(stockResponseDto.productId(), ProductMapper.toProductListItem(productEntity, imageUrl, ProductStatus.AVAILABLE));
+                    } else {
+                        productListItemMap.put(stockResponseDto.productId(), ProductMapper.toProductListItem(productEntity, imageUrl, ProductStatus.SOLD_OUT));
+                    }
                 } else {
-                    productListItemMap.put(stockResponseDto.productId(), ProductMapper.toProductListItem(productEntity, imageUrl, ProductStatus.SOLD_OUT));
+                    ///  상품 삭제
+                    productListItemMap.put(stockResponseDto.productId(), ProductMapper.toProductListItem(productEntity, imageUrl, ProductStatus.NOT_EXIST));
                 }
+
             }
         }
 
