@@ -160,4 +160,37 @@ public class ProductListItemCacheService {
                 .map(cachedMap::get)
                 .toList();
     }
+
+    // 다건 조회 로직 (락 없음.)
+    public List<ProductListItem> getCartProductListItemsBulkWithoutLock(List<UUID> productIds) { // 캐시 조회 로직
+        // 캐시 조회
+        List<ProductListItemEntity> cachedEntities = redisCacheRepository.getCartProductListItemsBulk(productIds);
+        log.info("[NO LOCK] Product list items {} cache hit", cachedEntities.size());
+        // 캐시 map 생성
+        Map<UUID, ProductListItem> cachedMap = cachedEntities.stream()
+                .map(ProductListItemMapper::toDomain)
+                .collect(Collectors.toMap(
+                        ProductListItem::getId,
+                        item -> item
+                ));
+
+        // missing productId
+        List<UUID> missIds = productIds.stream().filter(id -> !cachedMap.containsKey(id)).toList();
+        log.info("[NO LOCK] Product list items {} cache miss", missIds.size());
+        if (!missIds.isEmpty()) {
+            // DB 조회
+            List<ProductListItem> productListItemsFromOrigin = productListItemOriginService.getCartProductListItemsBulkFromOrigin(missIds);
+            // 엔터티로 변경
+            List<ProductListItemEntity> entitiesToCache = productListItemsFromOrigin.stream().map(ProductListItemMapper::toEntity).toList();
+            log.info("[NO LOCK] Put missed Product Items {} to Cache", entitiesToCache.size());
+            // 캐시 저장
+            redisCacheRepository.putCartProductListItemsBulk(entitiesToCache, Duration.ofSeconds(60));
+            productListItemsFromOrigin.forEach(item -> cachedMap.put(item.getId(), item));
+        }
+
+        return productIds.stream()
+                .map(cachedMap::get)
+                .toList();
+    }
+
 }

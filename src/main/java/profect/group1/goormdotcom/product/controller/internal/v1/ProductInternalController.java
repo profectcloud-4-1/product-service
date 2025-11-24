@@ -32,6 +32,16 @@ public class ProductInternalController implements ProductInternalApiDocs {
         return ApiResponse.onSuccess(products.stream().map(CartProductDtoMapper::toProductResponseDto).toList());
     }
 
+    @GetMapping("/cart/nolock")
+    public ApiResponse<List<CartProductResponseDto>> getCartProductsWithoutLock(
+            @RequestParam(value = "product-ids") List<UUID> productIds
+    ) {
+        List<ProductListItem> products;
+        products = productListItemService.getCartProductsWithoutLock(productIds);
+
+        return ApiResponse.onSuccess(products.stream().map(CartProductDtoMapper::toProductResponseDto).toList());
+    }
+
 
     @GetMapping("/cart/nocache")
     public ApiResponse<List<CartProductResponseDto>> getCartProductsFromOrigin(

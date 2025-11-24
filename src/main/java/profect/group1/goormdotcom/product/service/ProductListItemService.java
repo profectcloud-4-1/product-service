@@ -60,11 +60,15 @@ public class ProductListItemService {
                 entity, imageUrlGenerator.generateProductImageUrl(entity.getMainImageId()), ProductStatus.AVAILABLE)).toList();
     }
 
-    public List<ProductListItem> getCartProducts(final List<UUID> productIds) {
+    public List<ProductListItem> getCartProducts(List<UUID> productIds) {
         return productListItemCacheService.getCartProductListItemsBulk(productIds);
     }
 
-    public List<ProductListItem> getCartProductsFromOrigin(final List<UUID> productIds) {
+    public List<ProductListItem> getCartProductsWithoutLock(List<UUID> productIds) {
+        return productListItemCacheService.getCartProductListItemsBulkWithoutLock(productIds);
+    }
+
+    public List<ProductListItem> getCartProductsFromOrigin(List<UUID> productIds) {
         return productListItemOriginService.getCartProductListItemsBulkFromOrigin(productIds);
     }
 }
