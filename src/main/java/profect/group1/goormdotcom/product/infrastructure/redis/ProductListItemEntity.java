@@ -1,4 +1,4 @@
-package profect.group1.goormdotcom.product.repository.entity;
+package profect.group1.goormdotcom.product.infrastructure.redis;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

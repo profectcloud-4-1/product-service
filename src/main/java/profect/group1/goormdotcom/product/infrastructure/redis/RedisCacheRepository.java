@@ -1,14 +1,14 @@
-package profect.group1.goormdotcom.product.repository;
+package profect.group1.goormdotcom.product.infrastructure.redis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.lettuce.core.RedisConnectionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-import profect.group1.goormdotcom.product.repository.entity.ProductListItemEntity;
 
 import java.time.Duration;
 import java.util.*;
@@ -16,7 +16,7 @@ import java.util.*;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RedisCacheRepository {
+public class RedisCacheRepository extends RedisConnectionGuard {
 
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
@@ -34,13 +34,11 @@ public class RedisCacheRepository {
                 .toList();
 
         // MGET 실행
-        List<String> values;
-        try {
-            values = redisTemplate.opsForValue().multiGet(keys);
-        } catch (RedisConnectionFailureException e) {
-            log.warn("Redis connection failure", e.getCause());
-            return List.of();
-        }
+        List<String> values = callWithConnectionFallback(
+            "GET_CART_BULK",
+            () -> redisTemplate.opsForValue().multiGet(keys),
+            null
+        );
 
         if (values == null || values.isEmpty()) {
             return List.of();
@@ -82,8 +80,9 @@ public class RedisCacheRepository {
         }
 
         // MSET 실행
-        try {
-            redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+        executeWithConnectionGuard(
+            "PUT_CART_BULK",
+            () -> redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
                 var keySerializer = redisTemplate.getStringSerializer();
                 var valueSerializer = redisTemplate.getStringSerializer();
 
@@ -96,9 +95,8 @@ public class RedisCacheRepository {
                     }
                 });
                 return null;
-            });
-        } catch (RedisConnectionFailureException e) {
-            log.warn("Redis connection failure", e.getCause());
-        }
+            }),
+            null
+        );
     }
 }

@@ -128,11 +128,11 @@ public class TopExceptionBridgeFilter extends OncePerRequestFilter {
         String safeBody = LoggingUtil.maskSensitiveFields(pretty);
 
         if (ex != null) {
-            log.error("[RES] id={} {} → status={} took={}ms body={} (Exception: {})",
-                    requestId, uri, status, tookMs, safeBody, ex.getClass().getSimpleName());
+            log.error("[RES] id={} {} → status={} took={}ms(Exception: {})",
+                    requestId, uri, status, tookMs, ex.getClass().getSimpleName());
         } else {
-            log.info("[RES] id={} {} → status={} took={}ms body={}",
-                    requestId, uri, status, tookMs, safeBody);
+            log.info("[RES] id={} {} → status={} took={}ms ",
+                    requestId, uri, status, tookMs);
         }
     }
 

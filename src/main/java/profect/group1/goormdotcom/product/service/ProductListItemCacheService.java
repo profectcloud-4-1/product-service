@@ -8,15 +8,13 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
-import profect.group1.goormdotcom.product.domain.Product;
 import profect.group1.goormdotcom.product.domain.ProductListItem;
-import profect.group1.goormdotcom.product.repository.RedisCacheRepository;
-import profect.group1.goormdotcom.product.repository.RedisLockRepository;
-import profect.group1.goormdotcom.product.repository.entity.ProductListItemEntity;
-import profect.group1.goormdotcom.product.repository.mapper.ProductListItemMapper;
+import profect.group1.goormdotcom.product.infrastructure.redis.RedisCacheRepository;
+import profect.group1.goormdotcom.product.infrastructure.redis.RedisLockRepository;
+import profect.group1.goormdotcom.product.infrastructure.redis.ProductListItemEntity;
+import profect.group1.goormdotcom.product.infrastructure.redis.ProductListItemMapper;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,7 +25,7 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class ProductListItemCacheService {
-    private final ProductListItemOriginService productListItemOriginService;
+    private final ProductListItemQueryService productListItemQueryService;
     private final RedisLockRepository redisLockRepository;
     private final RedisCacheRepository redisCacheRepository;
     private final CacheManager cacheManager;
@@ -40,7 +38,7 @@ public class ProductListItemCacheService {
 
             if (cache == null) {
                 log.info("Cache not found");
-                return productListItemOriginService.getCartProductListItemFromOrigin(productId);
+                return productListItemQueryService.getCartProductListItemFromOrigin(productId);
             }
 
             ProductListItem cachedItem;
@@ -48,7 +46,7 @@ public class ProductListItemCacheService {
                 cachedItem = cache.get(productId, ProductListItem.class);
             } catch (RedisConnectionFailureException e) {
                 log.error("Cache connection failure : DB fallback");
-                return productListItemOriginService.getCartProductListItemFromOrigin(productId);
+                return productListItemQueryService.getCartProductListItemFromOrigin(productId);
             }
 
             if (cachedItem != null) {
@@ -78,7 +76,7 @@ public class ProductListItemCacheService {
                 }
 
                 log.info("Product list item {} get lock", productId);
-                ProductListItem productListItem = productListItemOriginService.getCartProductListItemFromOrigin(productId);
+                ProductListItem productListItem = productListItemQueryService.getCartProductListItemFromOrigin(productId);
                 cache.put(productId, productListItem);
                 return productListItem;
             } finally {
@@ -119,7 +117,7 @@ public class ProductListItemCacheService {
 
             if (!lockIds.isEmpty()) {
                 // DB 조회
-                List<ProductListItem> productListItemsFromOrigin = productListItemOriginService.getCartProductListItemsBulkFromOrigin(lockIds);
+                List<ProductListItem> productListItemsFromOrigin = productListItemQueryService.getCartProductListItemsBulkFromOrigin(lockIds);
                 // 엔터티로 변경
                 List<ProductListItemEntity> entitiesToCache = productListItemsFromOrigin.stream().map(ProductListItemMapper::toEntity).toList();
                 // 캐시 저장
@@ -146,7 +144,7 @@ public class ProductListItemCacheService {
                     log.info("Product list items {} cache hit in double check", doubleCheckedCachedItemList.size());
                 } else {
                     // 최종적으로 DB 조회
-                    List<ProductListItem> doubleCheckedItemsFromOriginList = productListItemOriginService.getCartProductListItemsBulkFromOrigin(lockIds);
+                    List<ProductListItem> doubleCheckedItemsFromOriginList = productListItemQueryService.getCartProductListItemsBulkFromOrigin(noLockIds);
                     List<ProductListItemEntity> doubleCheckedEntitiesToCache = doubleCheckedItemsFromOriginList.stream().map(ProductListItemMapper::toEntity).toList();
                     redisCacheRepository.putCartProductListItemsBulk(doubleCheckedEntitiesToCache, Duration.ofSeconds(60));
                     doubleCheckedItemsFromOriginList.forEach(item -> cachedMap.put(item.getId(), item));
@@ -179,7 +177,7 @@ public class ProductListItemCacheService {
         log.info("[NO LOCK] Product list items {} cache miss", missIds.size());
         if (!missIds.isEmpty()) {
             // DB 조회
-            List<ProductListItem> productListItemsFromOrigin = productListItemOriginService.getCartProductListItemsBulkFromOrigin(missIds);
+            List<ProductListItem> productListItemsFromOrigin = productListItemQueryService.getCartProductListItemsBulkFromOrigin(missIds);
             // 엔터티로 변경
             List<ProductListItemEntity> entitiesToCache = productListItemsFromOrigin.stream().map(ProductListItemMapper::toEntity).toList();
             log.info("[NO LOCK] Put missed Product Items {} to Cache", entitiesToCache.size());

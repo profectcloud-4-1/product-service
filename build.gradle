@@ -79,6 +79,8 @@ dependencies {
 
 	// Micrometer -> CloudWatch 측정 데이터 전송
 	implementation 'io.micrometer:micrometer-registry-cloudwatch2'
+    // Prometheus
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	// feign client
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'

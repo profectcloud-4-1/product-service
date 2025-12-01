@@ -1,4 +1,8 @@
 spring:
+  open-in-view: false
+  tomcat:
+    max-threads: 300
+
   application:
     name: "product-service"
   profiles:
@@ -9,14 +13,19 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${HIKARI_MAX_POOL_SIZE}
+      minimum-idle: ${HIKARI_MINIMUM_IDLE}
+      connection-timeout: ${HIKARI_CONNECTION_TIMEOUT}
 
   cloud:
     openfeign:
       client:
         config:
           default:
-            connectTimeout: 5000
-            readTimeout: 5000
+            connectTimeout: ${FEIGN_CONNECT_TIMEOUT}
+            readTimeout: ${FEIGN_READ_TIMEOUT}
+
   data:
     redis:
       host: ${REDIS_HOST}
@@ -57,16 +66,3 @@ stock:
       max-retries: ${MAX_RETRIES}
 
 
-resilience4j:
-  ratelimiter:
-    instances:
-      productOrigin:
-        limitForPeriod: ${PRODUCT_ORIGIN_LIMIT_FOR_PERIOD}
-        limitRefreshPeriod: ${PRODUCT_ORIGIN_LIMIT_REFRESH_PERIOD}
-        timeoutDuration: ${PRODUCT_ORIGIN_TIMEOUT_DURATION}
-
-  bulkhead:
-    instances:
-      productOrigin:
-        maxConcurrentCalls: ${PRODUCT_ORIGIN_MAX_CONCURRENT_CALLS}
-        maxWaitDuration: ${PRODUCT_ORIGIN_MAX_WAIT_DURATION}

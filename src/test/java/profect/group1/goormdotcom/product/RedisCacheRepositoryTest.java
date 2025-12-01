@@ -14,8 +14,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import profect.group1.goormdotcom.product.repository.RedisCacheRepository;
-import profect.group1.goormdotcom.product.repository.entity.ProductListItemEntity;
+import profect.group1.goormdotcom.product.infrastructure.redis.RedisCacheRepository;
+import profect.group1.goormdotcom.product.infrastructure.redis.ProductListItemEntity;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;

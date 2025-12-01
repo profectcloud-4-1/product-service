@@ -1,13 +1,10 @@
 package profect.group1.goormdotcom.product.service;
 
-import io.github.resilience4j.bulkhead.annotation.Bulkhead;
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import profect.group1.goormdotcom.common.apiPayload.ApiResponse;
 import profect.group1.goormdotcom.common.apiPayload.code.status.ErrorStatus;
-import profect.group1.goormdotcom.common.apiPayload.code.status.SuccessStatus;
 import profect.group1.goormdotcom.product.domain.ProductListItem;
 import profect.group1.goormdotcom.product.domain.ProductStatus;
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.StockClient;
@@ -16,20 +13,24 @@ import profect.group1.goormdotcom.product.repository.ProductRepository;
 import profect.group1.goormdotcom.product.repository.entity.ProductEntity;
 import profect.group1.goormdotcom.product.repository.mapper.ProductMapper;
 import profect.group1.goormdotcom.product.service.utils.ImageUrlGenerator;
+import profect.group1.goormdotcom.stock.service.StockService;
 
-import java.time.Duration;
 import java.util.*;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class ProductListItemOriginService {
+public class ProductListItemQueryService {
 
     private final ProductRepository productRepository;
 
     private final StockClient stockClient;
 
     private final ImageUrlGenerator imageUrlGenerator;
+
+    private final StockService stockService;
+
+    private final ProductQueryService productQueryService;
 
     // 단건 조회 로직
     public ProductListItem getCartProductListItemFromOrigin(UUID productId) { // DB 조회 로직
@@ -93,7 +94,7 @@ public class ProductListItemOriginService {
         Map<UUID, ProductListItem> productListItemMap = new HashMap<>();
 
         // DB 조회
-        List<ProductEntity> productEntities = productRepository.findAllByIdIncludingDeleted(productIds);
+        List<ProductEntity> productEntities = productQueryService.getProductEntities(productIds);
         for (ProductEntity productEntity : productEntities) productEntityMap.put(productEntity.getId(), productEntity);
 
         // 재고 조회

@@ -14,11 +14,11 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import profect.group1.goormdotcom.product.domain.ProductListItem;
-import profect.group1.goormdotcom.product.repository.RedisCacheRepository;
-import profect.group1.goormdotcom.product.repository.RedisLockRepository;
-import profect.group1.goormdotcom.product.repository.entity.ProductListItemEntity;
+import profect.group1.goormdotcom.product.infrastructure.redis.RedisCacheRepository;
+import profect.group1.goormdotcom.product.infrastructure.redis.RedisLockRepository;
+import profect.group1.goormdotcom.product.infrastructure.redis.ProductListItemEntity;
 import profect.group1.goormdotcom.product.service.ProductListItemCacheService;
-import profect.group1.goormdotcom.product.service.ProductListItemOriginService;
+import profect.group1.goormdotcom.product.service.ProductListItemQueryService;
 
 import java.time.Duration;
 import java.util.*;
@@ -39,7 +39,7 @@ class ProductListItemCacheServiceTest {
     @InjectMocks
     private ProductListItemCacheService service;
 
-    @Mock private ProductListItemOriginService productListItemOriginService;
+    @Mock private ProductListItemQueryService productListItemQueryService;
     @Mock private RedisLockRepository redisLockRepository;
     @Mock private RedisCacheRepository redisCacheRepository;
     @Mock private CacheManager cacheManager;
@@ -50,7 +50,7 @@ class ProductListItemCacheServiceTest {
 
     @BeforeEach
     void resetMocks() {
-        clearInvocations(productListItemOriginService, redisLockRepository, redisCacheRepository, cacheManager);
+        clearInvocations(productListItemQueryService, redisLockRepository, redisCacheRepository, cacheManager);
     }
 
     @Nested
@@ -67,7 +67,7 @@ class ProductListItemCacheServiceTest {
             when(cacheManager.getCache("product-list-item:cart")).thenReturn(mockCache);
             when(mockCache.get(eq(id), eq(ProductListItem.class)))
                     .thenThrow(new RedisConnectionFailureException("cache down"));
-            when(productListItemOriginService.getCartProductListItemFromOrigin(id)).thenReturn(origin);
+            when(productListItemQueryService.getCartProductListItemFromOrigin(id)).thenReturn(origin);
 
             // when
             ProductListItem item = service.getCartProductListItem(id);
@@ -75,7 +75,7 @@ class ProductListItemCacheServiceTest {
             // then
             assertThat(item.getId()).isEqualTo(id);
             assertThat(item.getMainImageUrl()).isEqualTo("urlA");
-            verify(productListItemOriginService, times(1)).getCartProductListItemFromOrigin(id);
+            verify(productListItemQueryService, times(1)).getCartProductListItemFromOrigin(id);
             verify(mockCache, never()).put(any(), any());
         }
 
@@ -91,7 +91,7 @@ class ProductListItemCacheServiceTest {
 
             when(redisLockRepository.tryLock(anyString(), any(Duration.class))).thenReturn("tkn");
             doNothing().when(redisLockRepository).unlock(anyString(), anyString());
-            when(productListItemOriginService.getCartProductListItemFromOrigin(id)).thenReturn(origin);
+            when(productListItemQueryService.getCartProductListItemFromOrigin(id)).thenReturn(origin);
 
             // when
             ProductListItem first = service.getCartProductListItem(id);
@@ -101,7 +101,7 @@ class ProductListItemCacheServiceTest {
             ProductListItem cached = cache.get(id, ProductListItem.class);
             assertThat(cached).isNotNull();
             assertThat(cached.getMainImageUrl()).isEqualTo("urlB");
-            verify(productListItemOriginService, times(1)).getCartProductListItemFromOrigin(id);
+            verify(productListItemQueryService, times(1)).getCartProductListItemFromOrigin(id);
             // 락 획득/해제 호출 검증
             verify(redisLockRepository, atLeastOnce()).tryLock(startsWith("lock:product-list-item:cart:"), any(Duration.class));
             verify(redisLockRepository).unlock(eq("lock:product-list-item:cart:" + id), eq("tkn"));
@@ -129,7 +129,7 @@ class ProductListItemCacheServiceTest {
 
             // then: 더블체크에서 캐시 히트, 원본 호출 없음
             assertThat(result).isEqualTo(cached);
-            verify(productListItemOriginService, never()).getCartProductListItemFromOrigin(any());
+            verify(productListItemQueryService, never()).getCartProductListItemFromOrigin(any());
             // put 호출도 없음 (더블체크로 반환)
             verify(mockCache, never()).put(any(), any());
             // 락 시도 후 실패 -> unlock은 빈 토큰으로 호출됨
@@ -151,7 +151,7 @@ class ProductListItemCacheServiceTest {
             when(redisLockRepository.tryLock(anyString(), any(Duration.class)))
                     .thenAnswer(inv -> first.getAndSet(false) ? "tkn" : null);
             doNothing().when(redisLockRepository).unlock(anyString(), anyString());
-            when(productListItemOriginService.getCartProductListItemFromOrigin(id)).thenReturn(origin);
+            when(productListItemQueryService.getCartProductListItemFromOrigin(id)).thenReturn(origin);
 
             int threads = 8;
             ExecutorService pool = Executors.newFixedThreadPool(threads);
@@ -175,7 +175,7 @@ class ProductListItemCacheServiceTest {
             pool.shutdown();
 
             // then: 락 획득 스레드만 로더 실행, 나머지는 더블체크에서 캐시 히트
-            verify(productListItemOriginService, times(1)).getCartProductListItemFromOrigin(id);
+            verify(productListItemQueryService, times(1)).getCartProductListItemFromOrigin(id);
             ProductListItem cached = cache.get(id, ProductListItem.class);
             assertThat(cached).isNotNull();
             // 락 호출 1회, 해제 1회(token=tkn)
@@ -209,7 +209,7 @@ class ProductListItemCacheServiceTest {
             assertThat(result).hasSize(2);
             assertThat(result.get(0).getId()).isEqualTo(id1);
             assertThat(result.get(1).getId()).isEqualTo(id2);
-            verify(productListItemOriginService, never()).getCartProductListItemsBulkFromOrigin(anyList());
+            verify(productListItemQueryService, never()).getCartProductListItemsBulkFromOrigin(anyList());
             verify(redisCacheRepository, never()).putCartProductListItemsBulk(anyList(), any());
         }
 
@@ -231,7 +231,7 @@ class ProductListItemCacheServiceTest {
                     productListItem(id2, "B", 200, "u2", "SOLD_OUT"),
                     productListItem(id3, "C", 300, "u3", "AVAILABLE")
             );
-            when(productListItemOriginService.getCartProductListItemsBulkFromOrigin(
+            when(productListItemQueryService.getCartProductListItemsBulkFromOrigin(
                     argThat(l -> l != null && l.size() == 2 && l.containsAll(List.of(id2, id3)))
             )).thenReturn(originItems);
 
@@ -256,7 +256,7 @@ class ProductListItemCacheServiceTest {
             // miss ID만 원본 호출
             // 호출 인자 검증 (순서 무관)
             ArgumentCaptor<List<UUID>> missCaptor = ArgumentCaptor.forClass(List.class);
-            verify(productListItemOriginService, times(1))
+            verify(productListItemQueryService, times(1))
                     .getCartProductListItemsBulkFromOrigin(missCaptor.capture());
             List<UUID> calledMiss = missCaptor.getValue();
             assertThat(new java.util.HashSet<>(calledMiss))
@@ -306,7 +306,7 @@ class ProductListItemCacheServiceTest {
             // then: 모두 채워지고 원본 호출 없음
             assertThat(result).extracting(ProductListItem::getId)
                     .containsExactly(id1, id2, id3);
-            verify(productListItemOriginService, never()).getCartProductListItemsBulkFromOrigin(anyList());
+            verify(productListItemQueryService, never()).getCartProductListItemsBulkFromOrigin(anyList());
             // 캐시 저장도 없음(락 전부 실패라 origin 경로 안탐)
             verify(redisCacheRepository, never()).putCartProductListItemsBulk(anyList(), any());
             // 언락도 호출 안됨
@@ -341,7 +341,7 @@ class ProductListItemCacheServiceTest {
             List<ProductListItem> originForId2 = List.of(
                     productListItem(id2, "B", 200, "u2", "SOLD_OUT")
             );
-            when(productListItemOriginService.getCartProductListItemsBulkFromOrigin(
+            when(productListItemQueryService.getCartProductListItemsBulkFromOrigin(
                     argThat(list -> list != null && list.size() == 1 && list.contains(id2))
             )).thenReturn(originForId2);
 
@@ -355,7 +355,7 @@ class ProductListItemCacheServiceTest {
 
             // then
             // origin이 lockIds(id2)로 2번 호출됨(한 번은 락 획득 분기, 한 번은 더블체크 미스 분기)
-            verify(productListItemOriginService, atLeast(2))
+            verify(productListItemQueryService, atLeast(2))
                     .getCartProductListItemsBulkFromOrigin(argThat(list -> list.size() == 1 && list.contains(id2)));
 
             // id1, id2는 값이 있고 id3은 여전히 비어있음(현재 구현 기준)

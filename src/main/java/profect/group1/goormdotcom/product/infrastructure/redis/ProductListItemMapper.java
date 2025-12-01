@@ -1,7 +1,6 @@
-package profect.group1.goormdotcom.product.repository.mapper;
+package profect.group1.goormdotcom.product.infrastructure.redis;
 
 import profect.group1.goormdotcom.product.domain.ProductListItem;
-import profect.group1.goormdotcom.product.repository.entity.ProductListItemEntity;
 
 public class ProductListItemMapper {
     public static ProductListItem toDomain(ProductListItemEntity productListItemEntity) {

@@ -42,6 +42,12 @@ public class StockInternalController implements StockInternalApiDocs {
     public ApiResponse<List<StockResponseDto>> getStocksBulk(
             @RequestParam(value = "product-ids") List<UUID> productIds
     ) {
+//        try {
+//            Thread.sleep(6000);
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+
         List<Stock> stocks = stockService.getStocksBulk(productIds);
         return ApiResponse.of(SuccessStatus._OK, stocks.stream().map(StockDtoMapper::toStockResponseDto).toList());
     }

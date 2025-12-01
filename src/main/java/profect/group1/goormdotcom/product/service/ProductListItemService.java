@@ -1,6 +1,5 @@
 package profect.group1.goormdotcom.product.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -8,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import profect.group1.goormdotcom.product.domain.ProductListItem;
 import profect.group1.goormdotcom.product.domain.ProductStatus;
 import profect.group1.goormdotcom.product.repository.ProductRepository;
@@ -19,7 +19,6 @@ import java.util.*;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ProductListItemService {
 
@@ -28,6 +27,7 @@ public class ProductListItemService {
     private final ProductListItemCacheService productListItemCacheService;
     private final ProductListItemOriginService productListItemOriginService;
 
+    @Transactional(readOnly = true)
     public List<ProductListItem> getProducts(
             final int page,
             final int size,
@@ -55,7 +55,6 @@ public class ProductListItemService {
         }
 
         // TODO: 재고 조회
-
         return resultPage.getContent().stream().map((entity) -> ProductMapper.toProductListItem(
                 entity, imageUrlGenerator.generateProductImageUrl(entity.getMainImageId()), ProductStatus.AVAILABLE)).toList();
     }

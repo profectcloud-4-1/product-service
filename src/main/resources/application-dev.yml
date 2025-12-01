@@ -16,7 +16,12 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info
+        include: health, info, prometheus, metrics
+  metrics:
+    distribution:
+      percentiles:
+        http.server.requests: 0.95, 0.99
+
   endpoint:
     health:
       show-details: never

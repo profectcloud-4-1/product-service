@@ -28,7 +28,7 @@ public class ProductInternalController implements ProductInternalApiDocs {
     ) {
         List<ProductListItem> products;
         products = productListItemService.getCartProducts(productIds);
-
+        System.out.println("[cart controller]" + products.toString());
         return ApiResponse.onSuccess(products.stream().map(CartProductDtoMapper::toProductResponseDto).toList());
     }
 

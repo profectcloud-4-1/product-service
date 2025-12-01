@@ -1,5 +1,9 @@
 package profect.group1.goormdotcom.common.config;
 
+import feign.RetryableException;
+import feign.Retryer;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -33,8 +37,8 @@ public class FeignConfig implements RequestInterceptor {
         }
     }
 
-    @Bean
-    public feign.Retryer feignRetryer() {
-        return new feign.Retryer.Default(200, 1000, 3);
-    }
+//    @Bean
+//    public feign.Retryer feignRetryer() {
+//        return new Retryer.Default(200, 1000, 3) {};
+//    }
 }

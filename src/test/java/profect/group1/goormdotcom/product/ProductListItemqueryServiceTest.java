@@ -12,7 +12,7 @@ import profect.group1.goormdotcom.product.infrastructure.client.StockService.Sto
 import profect.group1.goormdotcom.product.infrastructure.client.StockService.dto.StockResponseDto;
 import profect.group1.goormdotcom.product.repository.ProductRepository;
 import profect.group1.goormdotcom.product.repository.entity.ProductEntity;
-import profect.group1.goormdotcom.product.service.ProductListItemOriginService;
+import profect.group1.goormdotcom.product.service.ProductListItemQueryService;
 import profect.group1.goormdotcom.product.service.utils.ImageUrlGenerator;
 
 import java.time.LocalDateTime;
@@ -20,15 +20,14 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("ProductListItemOriginService bulk 테스트")
-class ProductListItemOriginServiceTest {
+@DisplayName("ProductListItemQueryService bulk 테스트")
+class ProductListItemQueryServiceTest {
 
     @InjectMocks
-    private ProductListItemOriginService service;
+    private ProductListItemQueryService service;
 
     @Mock private ProductRepository productRepository;
     @Mock private StockClient stockClient;
@@ -82,6 +81,63 @@ class ProductListItemOriginServiceTest {
         verify(imageUrlGenerator, times(1)).generateProductImageUrl(img1);
         verify(imageUrlGenerator, times(1)).generateProductImageUrl(img2);
         verify(imageUrlGenerator, never()).generateDefaultImageUrl();
+    }
+
+    @Test
+    @DisplayName("단건: deleted_at 존재 시 NOT_EXIST로 반환하고 재고 미조회")
+    void single_deletedAt_returnsNotExist_withoutStockCall() {
+        // given
+        UUID id = UUID.randomUUID();
+        UUID brand = UUID.randomUUID();
+        UUID cat = UUID.randomUUID();
+        UUID main = UUID.randomUUID();
+
+        // All-args 생성자 순서: id, brandId, categoryId, name, price, description, mainImageId, createdAt, deletedAt
+        var deletedAt = java.time.LocalDateTime.now();
+        var createdAt = deletedAt.minusDays(1);
+        ProductEntity deleted = new ProductEntity(id, brand, cat, "Del", 999, "desc", main, createdAt, deletedAt);
+
+        when(productRepository.findByIdIncludingDeleted(id)).thenReturn(java.util.Optional.of(deleted));
+        when(imageUrlGenerator.generateProductImageUrl(main)).thenReturn("uDel");
+
+        // when
+        ProductListItem item = service.getCartProductListItemFromOrigin(id);
+
+        // then
+        assertThat(item.getId()).isEqualTo(id);
+        assertThat(item.getMainImageUrl()).isEqualTo("uDel");
+        assertThat(item.getStatus()).isEqualTo("NOT_EXIST");
+        verify(stockClient, never()).getStock(any());
+    }
+
+    @Test
+    @DisplayName("다건: deleted_at 존재 시 NOT_EXIST로 매핑(재고 무관)")
+    void bulk_deletedAt_mapsNotExist_evenIfStockAvailable() {
+        // given
+        UUID id = UUID.randomUUID();
+        UUID brand = UUID.randomUUID();
+        UUID cat = UUID.randomUUID();
+        UUID main = UUID.randomUUID();
+        var deletedAt = java.time.LocalDateTime.now();
+        var createdAt = deletedAt.minusDays(1);
+        ProductEntity deleted = new ProductEntity(id, brand, cat, "Del", 1000, "desc", main, createdAt, deletedAt);
+
+        when(productRepository.findAllByIdIncludingDeleted(List.of(id))).thenReturn(List.of(deleted));
+        when(imageUrlGenerator.generateProductImageUrl(main)).thenReturn("uDel");
+
+        // 재고는 있어도, 삭제된 상품이면 NOT_EXIST로 처리 기대
+        when(stockClient.getStocksBulk(List.of(id))).thenReturn(
+                ApiResponse.onSuccess(List.of(new StockResponseDto(id, 5, java.time.LocalDateTime.now())))
+        );
+
+        // when
+        List<ProductListItem> items = service.getCartProductListItemsBulkFromOrigin(List.of(id));
+
+        // then
+        assertThat(items).hasSize(1);
+        assertThat(items.get(0).getId()).isEqualTo(id);
+        assertThat(items.get(0).getMainImageUrl()).isEqualTo("uDel");
+        assertThat(items.get(0).getStatus()).isEqualTo("NOT_EXIST");
     }
 
     @Test
@@ -173,4 +229,3 @@ class ProductListItemOriginServiceTest {
         verify(imageUrlGenerator, times(1)).generateDefaultImageUrl();
     }
 }
-

@@ -8,3 +8,4 @@ services:
     volumes:
       - ./config:/app/config
     user: 1000:1000
+
