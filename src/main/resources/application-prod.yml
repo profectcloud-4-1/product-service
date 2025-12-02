@@ -20,10 +20,3 @@ management:
   endpoint:
     health:
       show-details: never
-
-  metrics:
-    export:
-      cloudwatch2:
-        enabled: true
-        namespace: goorm-ecs-app
-        step: ${CLOUDWATCH_STEP:1m}
