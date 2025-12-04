@@ -72,3 +72,21 @@ resilience4j:
       productOrigin:
         maxConcurrentCalls: 1
         maxWaitDuration: 0
+
+# Kafka 설정은 @EmbeddedKafka 어노테이션으로 자동 설정됨
+# 테스트 환경에서는 EmbeddedKafka 브로커가 자동으로 시작됨
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+    consumer:
+      group-id: test-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
