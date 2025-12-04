@@ -24,7 +24,7 @@ public class StockConsumer {
      * 
      * @param message Map 형태로 자동 역직렬화됨 (JsonDeserializer 설정으로 인해)
      */
-    @KafkaListener(topics = "stock-service-topic", groupId = "test-consumer-group")
+    @KafkaListener(topics = "stock-service-topic")
     public void handleStockRollbackRequestedEvent(Map<String, Object> message) {
         try {
             log.info("재고 롤백 요청 이벤트 수신: message={}", message);

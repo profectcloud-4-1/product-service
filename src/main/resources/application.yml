@@ -19,25 +19,8 @@ spring:
             readTimeout: 5000
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      acks: 1 # 이 부분 메시지 보장 전략에 따라 수정
-      retries: 3
-      properties:
-        enable.idempotence: true # 이 부분 메시지 보장 전략에 따라 수정
-        #MSK 보안 설정
-        # security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_SSL}
-        # sasl.mechanism: ${KAFKA_SASL_MECHANISM:SCRAM-SHA-512}
-        # sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG:}
-        # ssl.endpoint.identification.algorithm: https
-    consumer:
-      # group-id: stock-service-group
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      auto-offset-reset: earliest
-      properties:
-        spring.json.trusted.packages: "*"
+    sasl.username: ${KAFKA_SASL_USERNAME}
+    sasl.password: ${KAFKA_SASL_PASSWORD}
   data:
     redis:
       host: ${REDIS_HOST}
