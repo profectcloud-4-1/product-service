@@ -20,3 +20,13 @@ management:
   endpoint:
     health:
       show-details: never
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      properties:
+        #MSK 보안 설정
+        # security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_SSL}
+        # sasl.mechanism: ${KAFKA_SASL_MECHANISM:SCRAM-SHA-512}
+        # sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG:}
+        # ssl.endpoint.identification.algorithm: https
+        # ssal.client.callback.handler.class: ${KAFKA_SASL_CLIENT_CALLBACK_HANDLER_CLASS:org.apache.kafka.common.security.scram.ScramLoginModule}
