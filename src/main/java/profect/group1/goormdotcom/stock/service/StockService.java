@@ -113,7 +113,6 @@ public class StockService {
 
                 if (retryCount > retryConfig.maxRetries()) {
                     log.info("재고 증가 실패");
-                    // return AdjustStockStatus.FAILED;
                     throw e;
                 }
 
