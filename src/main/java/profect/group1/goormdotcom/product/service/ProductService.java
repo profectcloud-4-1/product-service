@@ -78,9 +78,9 @@ public class ProductService {
         productImageRepository.saveAll(productImageEntities);
 
         // Image confirm 요청
-        for (UUID imageId: imageIds) {
-            fileStorageManager.confirmUpload(imageId);
-        }
+        // for (UUID imageId: imageIds) {
+        //    fileStorageManager.confirmUpload(imageId);
+        // }
         
         productRepository.save(productEntity);
             
