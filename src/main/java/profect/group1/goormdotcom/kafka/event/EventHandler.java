@@ -24,7 +24,7 @@ public class EventHandler {
     @Async
     public void handleStockRollbackCompletedEvent(StockRollbackCompletedEvent event) {
         log.info("재고 롤백 완료 이벤트 수신: orderId={}", event.orderId());
-        stockProducer.sendStockRollbackCompletedEvent("order-service-topic", event);
+        stockProducer.sendStockRollbackCompletedEvent("stock-rollback-completed-topic", event);
     }
 
     /**
@@ -35,6 +35,6 @@ public class EventHandler {
     @Async
     public void handleStockRollbackFailedEvent(StockRollbackFailedEvent event) {
         log.warn("재고 롤백 실패 이벤트 수신: orderId={}, error={}", event.orderId(), event.errorMessage());
-        stockProducer.sendStockRollbackFailedEvent("order-service-topic", event);
+        stockProducer.sendStockRollbackFailedEvent("stock-rollback-failed-topic", event);
     }
 }
