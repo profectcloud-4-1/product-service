@@ -1,4 +1,4 @@
-package profect.group1.goormdotcom.kafka;
+package profect.group1.goormdotcom.kafka.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
