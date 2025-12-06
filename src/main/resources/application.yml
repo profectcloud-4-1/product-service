@@ -18,9 +18,11 @@ spring:
             connectTimeout: 5000
             readTimeout: 5000
   kafka:
+    local: ${KAFKA_LOCAL:false}
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     sasl.username: ${KAFKA_SASL_USERNAME}
     sasl.password: ${KAFKA_SASL_PASSWORD}
+
   data:
     redis:
       host: ${REDIS_HOST}
