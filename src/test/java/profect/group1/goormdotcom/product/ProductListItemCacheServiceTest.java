@@ -19,6 +19,7 @@ import profect.group1.goormdotcom.product.repository.ProductRepository;
 import profect.group1.goormdotcom.product.repository.RedisLockRepository;
 import profect.group1.goormdotcom.product.repository.entity.ProductEntity;
 import profect.group1.goormdotcom.product.service.ProductListItemCacheService;
+import profect.group1.goormdotcom.product.service.ProductListItemDBService;
 import profect.group1.goormdotcom.product.service.utils.ImageUrlGenerator;
 
 import java.time.LocalDateTime;
@@ -46,6 +47,7 @@ class ProductListItemCacheServiceTest {
     @Mock private ImageUrlGenerator imageUrlGenerator;
     @Mock private RedisLockRepository redisLockRepository;
     @Mock private CacheManager cacheManager;
+    @Mock private ProductListItemDBService productListItemDBService;
 
     private ProductEntity entity(UUID id, String name, int price, UUID mainImageId) {
         return new ProductEntity(id, UUID.randomUUID(), UUID.randomUUID(), name, price, mainImageId, "desc");
@@ -53,7 +55,7 @@ class ProductListItemCacheServiceTest {
 
     @BeforeEach
     void resetMocks() {
-        clearInvocations(productRepository, stockClient, imageUrlGenerator, redisLockRepository, cacheManager);
+        clearInvocations(productRepository, stockClient, imageUrlGenerator, redisLockRepository, cacheManager, productListItemDBService);
     }
 
     @Test
@@ -63,15 +65,14 @@ class ProductListItemCacheServiceTest {
         UUID id = UUID.randomUUID();
         UUID main = UUID.randomUUID();
         ProductEntity e = entity(id, "A", 1000, main);
+        ProductListItem listItem = new ProductListItem(id, "A", 1000, "urlA", "status");
 
         Cache mockCache = mock(Cache.class);
         when(cacheManager.getCache("product-list-item:cart")).thenReturn(mockCache);
         when(mockCache.get(eq(id), eq(ProductListItem.class)))
                 .thenThrow(new RedisConnectionFailureException("cache down"));
 
-        when(productRepository.findByIdIncludingDeleted(id)).thenReturn(Optional.of(e));
-        when(imageUrlGenerator.generateProductImageUrl(main)).thenReturn("urlA");
-        when(stockClient.getStock(id)).thenReturn(ApiResponse.onSuccess(new StockResponseDto(id, 3, LocalDateTime.now())));
+        when(productListItemDBService.getCartProductListItemFromOrigin(id)).thenReturn(listItem);
 
         // when
         ProductListItem item = service.getCartProductListItem(id);
@@ -79,9 +80,6 @@ class ProductListItemCacheServiceTest {
         // then
         assertThat(item.getId()).isEqualTo(id);
         assertThat(item.getMainImageUrl()).isEqualTo("urlA");
-        verify(productRepository, times(1)).findByIdIncludingDeleted(id);
-        verify(stockClient, times(1)).getStock(id);
-        verify(imageUrlGenerator, times(1)).generateProductImageUrl(main);
         verify(mockCache, never()).put(any(), any());
     }
 
@@ -92,6 +90,7 @@ class ProductListItemCacheServiceTest {
         UUID id = UUID.randomUUID();
         UUID main = UUID.randomUUID();
         ProductEntity e = entity(id, "B", 2000, main);
+        ProductListItem listItem = new ProductListItem(id, "B", 1000, "urlB", "status");
 
         ConcurrentMapCache cache = new ConcurrentMapCache("product-list-item:cart");
         when(cacheManager.getCache("product-list-item:cart")).thenReturn(cache);
@@ -99,9 +98,7 @@ class ProductListItemCacheServiceTest {
         when(redisLockRepository.lock(anyString())).thenReturn(true);
         when(redisLockRepository.unlock(anyString())).thenReturn(true);
 
-        when(productRepository.findByIdIncludingDeleted(id)).thenReturn(Optional.of(e));
-        when(imageUrlGenerator.generateProductImageUrl(main)).thenReturn("urlB");
-        when(stockClient.getStock(id)).thenReturn(ApiResponse.onSuccess(new StockResponseDto(id, 5, LocalDateTime.now())));
+        when(productListItemDBService.getCartProductListItemFromOrigin(id)).thenReturn(listItem);
 
         // when
         ProductListItem first = service.getCartProductListItem(id);
@@ -120,6 +117,7 @@ class ProductListItemCacheServiceTest {
         UUID id = UUID.randomUUID();
         UUID main = UUID.randomUUID();
         ProductEntity e = entity(id, "C", 3000, main);
+        ProductListItem listItem = new ProductListItem(e.getId(), e.getName(), e.getPrice(), "urlB", "status");
 
         ConcurrentMapCache cache = new ConcurrentMapCache("product-list-item:cart");
         when(cacheManager.getCache("product-list-item:cart")).thenReturn(cache);
@@ -129,9 +127,7 @@ class ProductListItemCacheServiceTest {
         when(redisLockRepository.lock(anyString())).thenAnswer(inv -> first.getAndSet(false));
         when(redisLockRepository.unlock(anyString())).thenReturn(true);
 
-        when(productRepository.findByIdIncludingDeleted(id)).thenReturn(Optional.of(e));
-        when(imageUrlGenerator.generateProductImageUrl(main)).thenReturn("urlC");
-        when(stockClient.getStock(id)).thenReturn(ApiResponse.onSuccess(new StockResponseDto(id, 7, LocalDateTime.now())));
+        when(productListItemDBService.getCartProductListItemFromOrigin(id)).thenReturn(listItem);
 
         int threads = 10;
         ExecutorService pool = Executors.newFixedThreadPool(threads);
@@ -155,9 +151,7 @@ class ProductListItemCacheServiceTest {
         pool.shutdown();
 
         // then: 락 획득 스레드만 로더 실행, 나머지는 더블체크에서 캐시 히트
-        verify(productRepository, times(1)).findByIdIncludingDeleted(id);
-        verify(stockClient, times(1)).getStock(id);
-        verify(imageUrlGenerator, times(1)).generateProductImageUrl(main);
+        verify(productListItemDBService, times(1)).getCartProductListItemFromOrigin(id);
 
         ProductListItem cached = cache.get(id, ProductListItem.class);
         assertThat(cached).isNotNull();
