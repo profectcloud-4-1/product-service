@@ -102,8 +102,13 @@ public class TopExceptionBridgeFilter extends OncePerRequestFilter {
         }
 
         String body = readRequestBody(request);
-        if (!body.isBlank() && !isProd()) {
-            log.info("[REQ BODY] id={} {} {} body={}", requestId, method, uri, LoggingUtil.maskSensitiveFields(body));
+        // request body 삭제
+//        if (!body.isBlank() && !isProd()) {
+//            log.info("[REQ BODY] id={} {} {} body={}", requestId, method, uri, LoggingUtil.maskSensitiveFields(body));
+//        }
+
+        if (!isProd()) {
+            log.info("[REQ BODY] id={} {} {}", requestId, method, uri);
         }
 
         if ((pathVars == null || pathVars.isEmpty()) && params.isEmpty() && body.isBlank()) {
@@ -124,15 +129,24 @@ public class TopExceptionBridgeFilter extends OncePerRequestFilter {
             return;
         }
 
-        String pretty = LoggingUtil.toPrettyJson(rawBody);
-        String safeBody = LoggingUtil.maskSensitiveFields(pretty);
+        // response body 삭제
+//        String pretty = LoggingUtil.toPrettyJson(rawBody);
+//        String safeBody = LoggingUtil.maskSensitiveFields(pretty);
+
+//        if (ex != null) {
+//            log.error("[RES] id={} {} → status={} took={}ms body={} (Exception: {})",
+//                    requestId, uri, status, tookMs, safeBody, ex.getClass().getSimpleName());
+//        } else {
+//            log.info("[RES] id={} {} → status={} took={}ms body={}",
+//                    requestId, uri, status, tookMs, safeBody);
+//        }
 
         if (ex != null) {
-            log.error("[RES] id={} {} → status={} took={}ms body={} (Exception: {})",
-                    requestId, uri, status, tookMs, safeBody, ex.getClass().getSimpleName());
+            log.error("[RES] id={} {} → status={} took={}ms (Exception: {})",
+                    requestId, uri, status, tookMs, ex.getClass().getSimpleName());
         } else {
-            log.info("[RES] id={} {} → status={} took={}ms body={}",
-                    requestId, uri, status, tookMs, safeBody);
+            log.info("[RES] id={} {} → status={} took={}ms",
+                    requestId, uri, status, tookMs);
         }
     }
 
