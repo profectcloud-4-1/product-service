@@ -5,8 +5,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import profect.group1.goormdotcom.kafka.common.EventEnvelope;
+import profect.group1.goormdotcom.kafka.common.EventManager;
 import profect.group1.goormdotcom.kafka.event.StockRollbackCompletedEvent;
 import profect.group1.goormdotcom.kafka.event.StockRollbackFailedEvent;
+
+import java.time.LocalDateTime;
 
 
 @Slf4j
@@ -14,21 +18,20 @@ import profect.group1.goormdotcom.kafka.event.StockRollbackFailedEvent;
 @RequiredArgsConstructor
 public class StockProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final ObjectMapper objectMapper;
+    private final EventManager eventManager;
 
-    /**
-     * 재고 롤백 완료 이벤트를 Kafka 토픽으로 발행
-     */
-    public void sendStockRollbackCompletedEvent(String topic, StockRollbackCompletedEvent event) {
-        kafkaTemplate.send(topic, event);
-        log.info("재고 롤백 완료 이벤트 발행: topic={}, orderId={}", topic, event.orderId());
-    }
+    public void send(
+            String topic,
+            String key,
+            String eventType,
+            String aggregateType,
+            LocalDateTime occuredAt,
+            long version,
+            String source,
+            Object eventPayload) {
 
-    /**
-     * 재고 롤백 실패 이벤트를 Kafka 토픽으로 발행
-     */
-    public void sendStockRollbackFailedEvent(String topic, StockRollbackFailedEvent event) {
-        kafkaTemplate.send(topic, event);
-        log.warn("재고 롤백 실패 이벤트 발행: topic={}, orderId={}, error={}", topic, event.orderId(), event.errorMessage());
+        EventEnvelope eventEnvelope = eventManager.wrap(eventPayload, eventType, aggregateType, occuredAt, version, source);
+        kafkaTemplate.send(topic, key, eventEnvelope);
+        log.info("Kafka 메시지 발행 완료: topic={} payload={}", topic, eventEnvelope.getPayload());
     }
 }

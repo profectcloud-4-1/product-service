@@ -1,6 +1,9 @@
 package profect.group1.goormdotcom.kafka.config;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -8,12 +11,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.DefaultBackOffHandler;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@RequiredArgsConstructor
+@Slf4j
 public class KafkaConsumerConfig {
     
     @Value("${spring.kafka.bootstrap-servers}")
@@ -27,6 +38,8 @@ public class KafkaConsumerConfig {
 
     @Value("${spring.kafka.local}")
     private boolean local;
+
+    private final ProducerFactory<String, Object> producerFactory;
 
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
@@ -61,4 +74,63 @@ public class KafkaConsumerConfig {
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> stockKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory());
+        KafkaTemplate<String, Object> kafkaTemplate = new KafkaTemplate<>(producerFactory);
+        factory.setCommonErrorHandler(stockKafkaErrorHandler(deadLetterPublishingRecoverer(kafkaTemplate)));
+        return factory;
+    }
+
+    @Bean
+    public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(
+            KafkaTemplate<String, Object> kafkaTemplate
+    ) {
+        return new DeadLetterPublishingRecoverer(
+                kafkaTemplate,
+                (record, ex) -> new TopicPartition(record.topic() + "-dlq", record.partition())
+        );
+    }
+
+    @Bean
+    public DefaultErrorHandler stockKafkaErrorHandler(
+            DeadLetterPublishingRecoverer deadLetterPublishingRecoverer
+    ) {
+        // 최대 재시도 3번
+        ExponentialBackOffWithMaxRetries backOff = new ExponentialBackOffWithMaxRetries(3);
+
+        backOff.setInitialInterval(1_000L);   // 첫 대기 1초
+        backOff.setMultiplier(2.0);           // 2배씩 증가 (1s -> 2s -> 4s ...)
+        backOff.setMaxInterval(10_000L);      // 최대 대기 10초
+
+        DefaultErrorHandler errorHandler =
+                new DefaultErrorHandler(deadLetterPublishingRecoverer, backOff);
+
+        errorHandler.addRetryableExceptions(
+                IllegalStateException.class
+        );
+        errorHandler.addNotRetryableExceptions(
+//                IllegalStateException.class,
+                IllegalArgumentException.class
+        );
+
+        errorHandler.setRetryListeners((record, ex, deliveryAttempt) -> {
+            log.warn(
+                    "[KAFKA-RETRY] attempt={} topic={} partition={} offset={} key={}",
+                    deliveryAttempt,
+                    record.topic(),
+                    record.partition(),
+                    record.offset(),
+                    record.key(),
+                    ex.getClass().getSimpleName(),
+                    ex.getMessage()
+            );
+        });
+
+        return errorHandler;
+    }
+
+
 }

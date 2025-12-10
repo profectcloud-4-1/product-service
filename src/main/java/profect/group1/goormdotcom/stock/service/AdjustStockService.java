@@ -12,6 +12,7 @@ import profect.group1.goormdotcom.kafka.event.StockRollbackFailedEvent;
 import profect.group1.goormdotcom.stock.repository.StockRepository;
 import profect.group1.goormdotcom.stock.repository.entity.StockEntity;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,14 +58,16 @@ public class AdjustStockService {
             }
 
             if (orderId != null) {
-                eventPublisher.publishEvent(new StockRollbackCompletedEvent(orderId));
+                LocalDateTime occuredAt = LocalDateTime.now();
+                eventPublisher.publishEvent(new StockRollbackCompletedEvent(orderId, occuredAt));
             }
             
         } catch (Exception e) {
             if (orderId != null) {
                 String errorMessage = e.getMessage() != null ? e.getMessage() : "Stock rollback failed";
                 String errorType = e.getClass().getSimpleName();
-                eventPublisher.publishEvent(new StockRollbackFailedEvent(orderId, errorMessage, errorType));
+                LocalDateTime occuredAt = LocalDateTime.now();
+                eventPublisher.publishEvent(new StockRollbackFailedEvent(orderId, errorMessage, errorType, occuredAt));
             }
             throw e;
         }

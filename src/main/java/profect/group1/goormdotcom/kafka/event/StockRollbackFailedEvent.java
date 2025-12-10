@@ -1,14 +1,19 @@
 package profect.group1.goormdotcom.kafka.event;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * 재고 롤백 실패 이벤트
- */
-public record StockRollbackFailedEvent(
-    UUID orderId,
-    String errorMessage,
-    String errorType
-) {
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+public class StockRollbackFailedEvent{
+    private UUID orderId;
+    private String errorMessage;
+    private String errorType;
+    private LocalDateTime occurredAt;
 }
 
