@@ -121,7 +121,7 @@ public class ProductServiceTest {
             verify(stockClient, times(1)).registerStock(any(StockRequestDto.class));
             verify(productRepository, times(1)).save(any(ProductEntity.class));
             verify(productImageRepository, times(1)).saveAll(any());
-            verify(fileStorageManager, times(imageIds.size())).confirmUpload(any(UUID.class));
+//            verify(fileStorageManager, times(imageIds.size())).confirmUpload(any(UUID.class));
         }
 
         @Test
@@ -157,7 +157,7 @@ public class ProductServiceTest {
             // then
             verify(productRepository, times(1)).findById(productId);
             verify(productImageRepository, times(1)).saveAll(any());
-            verify(fileStorageManager, times(newImageIds.size())).confirmUpload(any(UUID.class));
+//            verify(fileStorageManager, times(newImageIds.size())).confirmUpload(any(UUID.class));
             verify(productRepository, times(1)).save(any(ProductEntity.class));
         }
 

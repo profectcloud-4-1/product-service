@@ -3,6 +3,8 @@ plugins {
 	id 'org.springframework.boot' version '3.5.6'
 	id 'io.spring.dependency-management' version '1.1.7'
     id 'jacoco'
+    id 'maven-publish'
+    id 'org.springframework.cloud.contract' version '4.3.0'
 }
 
 group = 'profect.group1'
@@ -22,6 +24,7 @@ configurations {
 }
 
 repositories {
+    mavenLocal()
 	mavenCentral()
 }
 
@@ -73,6 +76,23 @@ jacocoTestReport {
     }
 }
 
+contracts {
+    baseClassForTests = 'profect.group1.goormdotcom.contractTest.BaseTestClass'
+    testFramework = 'JUNIT5'
+    contractsDslDir = file('src/contractTest/resources/contracts')
+}
+
+publishing {
+    publications {
+        stubs(MavenPublication) {
+            // stubs JAR을 publish 대상으로 추가
+            artifact(tasks.named('verifierStubsJar'))
+            // (선택) artifactId를 stubs용으로 분리하고 싶으면
+            // artifactId = 'product-service-stubs'
+        }
+    }
+}
+
 dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -96,6 +116,10 @@ dependencies {
     // circuit braker
     implementation 'io.github.resilience4j:resilience4j-spring-boot3'
     implementation 'io.github.resilience4j:resilience4j-annotations'
+
+    // Spring Cloud Contract
+    testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier' // producer
+    testImplementation "org.springframework.cloud:spring-cloud-starter-contract-stub-runner" // consumer
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0'
 	compileOnly 'org.projectlombok:lombok'
